@@ -4,10 +4,14 @@ import cn.hutool.core.util.IdUtil;
 import com.rory.apimock.dto.web.APICategory;
 import com.rory.apimock.exceptions.ResourceNotFoundException;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.ArrayTuple;
+import org.jooq.Record;
+import org.jooq.UpdateConditionStep;
+import org.jooq.conf.ParamType;
+import org.jooq.impl.DSL;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -16,106 +20,74 @@ import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import static org.jooq.impl.DSL.*;
+
 public class APICategoryDao extends BaseDao<APICategory> {
     public APICategoryDao(SqlClient sqlClient) {
         super(sqlClient);
     }
 
     public Future<APICategory> save(APICategory dto) {
-        Promise<APICategory> promise = Promise.promise();
-        OffsetDateTime now = currentUTCTime();
-        dto.setId(IdUtil.fastSimpleUUID());
 
         final String sql = "INSERT INTO API_CATEGORY(API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT) VALUES($1, $2, $3, $4, $5)";
-
-        this.sqlClient.preparedQuery(sql)
-            .execute(Tuple.from(Arrays.asList(dto.getId(),
+        OffsetDateTime now = currentUTCTime();
+        dto.setId(IdUtil.fastSimpleUUID());
+        return this.execute(sql,
+            Tuple.from(Arrays.asList(dto.getId(),
                 dto.getName(),
                 dto.getDescription(),
                 now,
-                now)))
-            .onSuccess(rowSet -> {
+                now)),
+            (promise, rowSet) -> {
                 dto.setCreateAt(formatToString(now));
                 dto.setUpdateAt(formatToString(now));
                 promise.complete(dto);
-            })
-            .onFailure(promise::fail);
-        return promise.future();
+            });
     }
 
     public Future<APICategory> update(String id, APICategory dto) {
-        Promise<APICategory> promise = Promise.promise();
-
-        return this.findOne(id).compose(found -> {
+        return this.checkExisted(id).compose(found -> {
+            //FIXME: Optional fields update?? dynamic SQL, HOW??
             OffsetDateTime now = currentUTCTime();
-
-            final String sql = "UPDATE API_CATEGORY SET NAME = $1, DESCRIPTION = $2, UPDATE_AT = $3 WHERE API_CATEGORY_ID = $4";
-
-            this.sqlClient.preparedQuery(sql)
-                .execute(Tuple.from(Arrays.asList(
-                    dto.getName(),
-                    dto.getDescription(),
-                    now,
-                    id)))
-                .onSuccess(rowSet -> {
-                    dto.setUpdateAt(formatToString(now));
-                    promise.complete(dto);
-                })
-                .onFailure(promise::fail);
-            return promise.future();
+            final String sql = "UPDATE API_CATEGORY SET NAME = $1, UPDATE_AT = $3 WHERE API_CATEGORY_ID = $4";
+            return this.execute(sql,
+                Tuple.from(Arrays.asList(dto.getName(), dto.getDescription(), now, id)),
+                (promise, rowSet) -> this.findOne(id).onSuccess(promise::complete).onFailure(promise::fail));
         });
     }
 
     public Future<Void> delete(String id) {
-        Promise<Void> promise = Promise.promise();
-        return this.findOne(id).compose(found -> {
+        // TODO: Check is API services under this category, if yes, delete is not allowed.
+        return this.checkExisted(id).compose(found -> {
             final String sql = "DELETE FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
-
-            this.sqlClient.preparedQuery(sql)
-                .execute(Tuple.of(id))
-                .onSuccess(rowSet -> promise.complete())
-                .onFailure(promise::fail);
-            return promise.future();
+            return this.execute(sql, Tuple.of(id), (promise, rowSet) -> promise.complete());
         });
     }
 
-    public Future<APICategory> findOne(String id) {
-        Promise<APICategory> promise = Promise.promise();
-        final String sql = "SELECT API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
-
-        this.sqlClient.preparedQuery(sql)
-            .collecting(rowCollector())
-            .execute(Tuple.of(id))
-            .onSuccess(sqlResult -> {
-                Optional<APICategory> any = sqlResult.value().stream().findAny();
-                if (any.isPresent()) {
-                    promise.complete(any.get());
-                } else {
-                    promise.fail(new ResourceNotFoundException());
-                }
-            })
-            .onFailure(promise::fail);
-        return promise.future();
+    public Future<Boolean> checkExisted(String id) {
+        final String sql = "SELECT count(1) as result FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
+        return this.existed(id, sql);
     }
 
-
+    public Future<APICategory> findOne(String id) {
+        final String sql = "SELECT API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
+        return this.executeWithCollectorMapping(sql, Tuple.of(id), (promise, sqlResult) -> {
+            Optional<APICategory> any = sqlResult.value().stream().findAny();
+            if (any.isPresent()) {
+                promise.complete(any.get());
+            } else {
+                promise.fail(new ResourceNotFoundException());
+            }
+        });
+    }
 
     public Future<List<APICategory>> findAll() {
-        Promise<List<APICategory>> promise = Promise.promise();
         final String sql = "SELECT API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT FROM API_CATEGORY";
-
-        this.sqlClient.preparedQuery(sql)
-            .collecting(rowCollector())
-            .execute()
-            .onSuccess(sqlResult -> {
-                promise.complete(sqlResult.value());
-            })
-            .onFailure(promise::fail);
-        return promise.future();
+        return this.executeWithCollectorMapping(sql, ArrayTuple.EMPTY, (promise, sqlResult) -> promise.complete(sqlResult.value()));
     }
 
     protected Collector<Row, ?, List<APICategory>> rowCollector() {
-         return Collectors.mapping(
+        return Collectors.mapping(
             row -> new APICategory(row.getString("api_category_id"),
                 formatToString(row.getOffsetDateTime("create_at")),
                 formatToString(row.getOffsetDateTime("update_at")),
@@ -123,5 +95,14 @@ public class APICategoryDao extends BaseDao<APICategory> {
                 row.getString("description")),
             Collectors.toList()
         );
+    }
+
+    public static void main(String[] args) {
+        UpdateConditionStep<Record> where = DSL.update(table("API_CATEGORY"))
+            .set(field("name"), "1")
+            .set(field("description"), "abc")
+            .where(condition(field("id").eq("123")));
+        String sql = where.getSQL(ParamType.INLINED);
+        System.out.println(sql);
     }
 }

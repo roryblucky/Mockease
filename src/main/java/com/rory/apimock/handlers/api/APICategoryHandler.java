@@ -6,6 +6,7 @@ import com.rory.apimock.dto.web.APICategory;
 import com.rory.apimock.dto.web.APiCategoryList;
 import com.rory.apimock.dto.web.RequestWrapper;
 import com.rory.apimock.dto.web.ResponseWrapper;
+import com.rory.apimock.exceptions.ResourceNotFoundException;
 import com.rory.apimock.utils.BeanValidationUtil;
 import io.vertx.core.json.jackson.JacksonCodec;
 import io.vertx.ext.web.RoutingContext;

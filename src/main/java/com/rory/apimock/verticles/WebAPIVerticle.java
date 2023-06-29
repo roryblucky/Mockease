@@ -41,13 +41,8 @@ public class WebAPIVerticle extends BaseVerticle {
 
         router.route("/static/*").handler(StaticHandler.create("webroot"));
 
-        //session
-        SessionStore sessionStore = LocalSessionStore.create(vertx);
-
-
         // Management API
         RouteBuilder.getInstance(router.route("/v1/api/*"))
-            .handler(SessionHandler.create(sessionStore))
             .commonHandler()
             .mountSubRouter(this.apiRouter());
 

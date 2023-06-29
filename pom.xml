@@ -20,6 +20,7 @@
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
 
         <main.verticle>com.rory.apimock.MainVerticle</main.verticle>
+        <jooq.version>3.14.16</jooq.version>
         <launcher.class>io.vertx.core.Launcher</launcher.class>
     </properties>
 
@@ -109,7 +110,7 @@
             <artifactId>jakarta.el</artifactId>
             <version>5.0.0-M1</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -142,7 +143,6 @@
             <version>4.1.92.Final</version>
             <classifier>osx-aarch_64</classifier>
         </dependency>
-
 
     </dependencies>
 

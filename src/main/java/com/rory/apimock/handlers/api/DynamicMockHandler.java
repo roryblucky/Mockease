@@ -1,8 +1,6 @@
 package com.rory.apimock.handlers.api;
 
-import com.rory.apimock.dto.web.PathDefinition;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 
 public class DynamicMockHandler {

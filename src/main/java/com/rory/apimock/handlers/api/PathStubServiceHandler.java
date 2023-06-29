@@ -3,7 +3,7 @@ package com.rory.apimock.handlers.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.rory.apimock.dto.Constants;
 import com.rory.apimock.dto.web.RequestWrapper;
-import com.rory.apimock.dto.web.PathDefinition;
+import com.rory.apimock.dto.web.APIPathDefinition;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.JacksonCodec;
 import io.vertx.ext.web.RoutingContext;
@@ -19,13 +19,13 @@ public class PathStubServiceHandler {
     }
 
     public void createPathStub(RoutingContext ctx) {
-        RequestWrapper<PathDefinition> request = JacksonCodec.decodeValue(ctx.body().buffer(), new TypeReference<>() {
+        RequestWrapper<APIPathDefinition> request = JacksonCodec.decodeValue(ctx.body().buffer(), new TypeReference<>() {
         });
-        PathDefinition pathDefinition = request.getData();
-        vertx.eventBus().request(Constants.API_MOCK_CREATE_ADDRESS, pathDefinition)
+        APIPathDefinition apiPathDefinition = request.getData();
+        vertx.eventBus().request(Constants.API_MOCK_CREATE_ADDRESS, apiPathDefinition)
             .onSuccess(message -> {
                 log.info("create Mock endpoint success, msg -> {}", message.body());
-                ctx.json(RequestWrapper.of(pathDefinition));
+                ctx.json(RequestWrapper.of(apiPathDefinition));
             })
             .onFailure(ctx::fail);
     }

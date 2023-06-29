@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -18,8 +19,6 @@ public class APIService extends BaseDto {
 
     private String categoryName;
 
-    private String categoryIdentifier;
-
     private String description;
 
     @NotEmpty
@@ -27,4 +26,6 @@ public class APIService extends BaseDto {
 
     @NotEmpty
     private String version;
+
+    private List<APIPathDefinition> pathStubs;
 }
