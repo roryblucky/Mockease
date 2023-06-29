@@ -1,0 +1,19 @@
+http:
+  api:
+    server:
+      port: 8080
+  mock:
+    server:
+      port: 8081
+
+db:
+  host: 127.0.0.1
+  port: 5432
+  database: api_mock
+  username: api_mock_user
+  password: api_mock_pass
+  poolSize: 5
+  connectionTimeout: 30000
+  idleTimeout: 30000
+  maxSize: 20
+
