@@ -6,7 +6,6 @@ import com.rory.apimock.dto.web.APIService;
 import com.rory.apimock.dto.web.RequestWrapper;
 import com.rory.apimock.dto.web.ResponseWrapper;
 import com.rory.apimock.utils.BeanValidationUtil;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.jackson.JacksonCodec;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.sqlclient.SqlClient;

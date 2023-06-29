@@ -1,7 +1,6 @@
 package com.rory.apimock.handlers.error;
 
 import com.rory.apimock.dto.web.ProblemDetails;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;

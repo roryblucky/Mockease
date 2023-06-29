@@ -7,7 +7,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

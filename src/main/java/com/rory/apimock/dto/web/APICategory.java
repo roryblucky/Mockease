@@ -1,11 +1,9 @@
 package com.rory.apimock.dto.web;
 
-import com.rory.apimock.dao.BaseDao;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.*;
-
-import java.io.Serializable;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data

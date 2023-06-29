@@ -5,11 +5,8 @@ import com.rory.apimock.exceptions.ValidationException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import org.hibernate.validator.internal.engine.ValidatorFactoryImpl;
-import org.hibernate.validator.internal.engine.ValidatorImpl;
 
 import java.util.Set;
 

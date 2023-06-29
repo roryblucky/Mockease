@@ -2,9 +2,9 @@ package com.rory.apimock.dto.web;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)

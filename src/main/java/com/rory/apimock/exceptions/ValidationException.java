@@ -3,7 +3,6 @@ package com.rory.apimock.exceptions;
 import com.rory.apimock.dto.web.ProblemDetails;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 
 import java.util.List;
 import java.util.Set;
