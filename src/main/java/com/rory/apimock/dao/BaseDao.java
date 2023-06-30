@@ -23,6 +23,11 @@ import java.util.stream.Collector;
 
 
 public abstract class BaseDao<T> {
+
+
+    protected static final Integer EXISTED = 1;
+    protected static final Integer NOT_EXISTED = 0;
+
     protected final SqlClient sqlClient;
 
     protected final DSLContext dslContext;
@@ -59,7 +64,7 @@ public abstract class BaseDao<T> {
 
     protected Future<Void> existed(String sql) {
         return this.execute(sql, (promise, rowSet) -> {
-            if (rowSet.size() == 1) {
+            if (rowSet.size() == EXISTED) {
                 promise.complete();
             } else {
                 promise.fail(new ResourceNotFoundException());

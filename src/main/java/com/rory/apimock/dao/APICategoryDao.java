@@ -4,11 +4,11 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.rory.apimock.db.tables.records.ApiCategoryRecord;
 import com.rory.apimock.dto.web.APICategory;
+import com.rory.apimock.exceptions.OperationNotAllowedException;
 import com.rory.apimock.exceptions.ResourceNotFoundException;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.UpdateSetMoreStep;
 
@@ -19,6 +19,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static com.rory.apimock.db.Tables.API_CATEGORY;
+import static com.rory.apimock.db.Tables.API_SERVICE;
 
 @Slf4j
 public class APICategoryDao extends BaseDao<APICategory> {
@@ -52,17 +53,25 @@ public class APICategoryDao extends BaseDao<APICategory> {
             if (StrUtil.isNotEmpty(dto.getDescription())) {
                 sqlStep.set(API_CATEGORY.DESCRIPTION, dto.getDescription());
             }
-            final String finalSQl = sqlStep.where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
 
+            final String finalSQl = sqlStep.where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
             return this.execute(finalSQl, (promise, rowSet) -> this.findOne(id).onSuccess(promise::complete).onFailure(promise::fail));
         });
     }
 
     public Future<Void> delete(String id) {
-        // TODO: Check is API services under this category, if yes, delete is not allowed.
         return this.checkExisted(id).compose(found -> {
-            final String sql = "DELETE FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
-            return this.execute(sql, Tuple.of(id), (promise, rowSet) -> promise.complete());
+            final String apiServiceSql = dslContext.selectOne().from(API_SERVICE).where(API_SERVICE.CATEGORY_ID.eq(id)).getSQL();
+            return this.execute(apiServiceSql, (promise, rowSet) -> {
+                if (rowSet.size() == NOT_EXISTED) {
+                    promise.complete();
+                } else {
+                    promise.fail(new OperationNotAllowedException("there are API services under this category"));
+                }
+            });
+        }).compose(noRecord -> {
+            final String sql = dslContext.delete(API_CATEGORY).where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
+            return this.execute(sql, ((promise, rowSet) -> promise.complete()));
         });
     }
 
