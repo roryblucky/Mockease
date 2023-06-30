@@ -82,7 +82,7 @@ public class APIServiceDao extends BaseDao<APIService> {
     }
 
     @Override
-    protected Collector<Row, ?, List<APIService>> rowCollector() {
+    protected Collector<Row, ?, List<APIService>> rowMappingCollector() {
         return Collectors.mapping(
             row -> new APIService(row.getString("api_service_id"),
                 formatToString(row.getOffsetDateTime("create_at")),

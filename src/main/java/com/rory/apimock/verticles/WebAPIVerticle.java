@@ -1,8 +1,8 @@
 package com.rory.apimock.verticles;
 
 import com.rory.apimock.handlers.api.APICategoryHandler;
+import com.rory.apimock.handlers.api.APIPathStubHandler;
 import com.rory.apimock.handlers.api.APIServiceHandler;
-import com.rory.apimock.handlers.api.PathStubServiceHandler;
 import com.rory.apimock.handlers.error.APIFailureHandler;
 import com.rory.apimock.utils.RouteBuilder;
 import com.rory.apimock.utils.RouterBuilder;
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WebAPIVerticle extends BaseVerticle {
 
     private APIServiceHandler apiServiceHandler;
-    private PathStubServiceHandler pathStubServiceHandler;
+    private APIPathStubHandler apiPathStubHandler;
 
     private APICategoryHandler categoryHandler;
 
@@ -29,7 +29,7 @@ public class WebAPIVerticle extends BaseVerticle {
         super.init(vertx, context);
         this.apiServiceHandler = new APIServiceHandler(sqlClient);
         this.categoryHandler = new APICategoryHandler(sqlClient);
-        this.pathStubServiceHandler = new PathStubServiceHandler(vertx);
+        this.apiPathStubHandler = new APIPathStubHandler(vertx, sqlClient);
     }
 
     @Override
@@ -69,10 +69,10 @@ public class WebAPIVerticle extends BaseVerticle {
         apiRouter.put("/api-services/:serviceId").handler(apiServiceHandler::updateAPIService);
         apiRouter.delete("/api-services/:serviceId").handler(apiServiceHandler::deleteAPIServices);
 
-        apiRouter.post("/api-services/:serviceId/paths").handler(pathStubServiceHandler::createPathStub);
-        apiRouter.get("/api-services/:serviceId/paths").handler(pathStubServiceHandler::getPaths);
-        apiRouter.put("/api-services/:serviceId/paths/:pathId").handler(pathStubServiceHandler::updatePathStub);
-        apiRouter.delete("/api-services/:serviceId/paths/:pathId").handler(pathStubServiceHandler::deletePathStub);
+        apiRouter.post("/api-services/:serviceId/paths").handler(apiPathStubHandler::createPathStub);
+        apiRouter.get("/api-services/:serviceId/paths").handler(apiPathStubHandler::getPaths);
+        apiRouter.put("/api-services/:serviceId/paths/:pathId").handler(apiPathStubHandler::updatePathStub);
+        apiRouter.delete("/api-services/:serviceId/paths/:pathId").handler(apiPathStubHandler::deletePathStub);
 
         return apiRouter;
     }

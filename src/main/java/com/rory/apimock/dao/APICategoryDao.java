@@ -103,7 +103,7 @@ public class APICategoryDao extends BaseDao<APICategory> {
         return this.executeWithCollectorMapping(sql, (promise, sqlResult) -> promise.complete(sqlResult.value()));
     }
 
-    protected Collector<Row, ?, List<APICategory>> rowCollector() {
+    protected Collector<Row, ?, List<APICategory>> rowMappingCollector() {
         return Collectors.mapping(
             row -> new APICategory(row.getString("api_category_id"),
                 formatToString(row.getOffsetDateTime("create_at")),

@@ -60,7 +60,7 @@ public abstract class BaseDao<T> {
     }
 
 
-    protected abstract Collector<Row, ?, List<T>> rowCollector();
+    protected abstract Collector<Row, ?, List<T>> rowMappingCollector();
 
     protected Future<Void> existed(String sql) {
         return this.execute(sql, (promise, rowSet) -> {
@@ -74,7 +74,7 @@ public abstract class BaseDao<T> {
     protected <R> Future<R> executeWithCollectorMapping(String sql, Tuple params, BiConsumer<Promise<R>, SqlResult<List<T>>> consumer) {
         Promise<R> promise = Promise.promise();
         this.sqlClient.preparedQuery(sql)
-            .collecting(rowCollector())
+            .collecting(rowMappingCollector())
             .execute(params)
             .onSuccess(sqlResult -> consumer.accept(promise, sqlResult))
             .onFailure(promise::fail);
@@ -85,7 +85,7 @@ public abstract class BaseDao<T> {
         return this.executeWithCollectorMapping(sql, ArrayTuple.EMPTY, consumer);
     }
 
-    protected <R> Future<R> execute(String sql, Tuple params,  BiConsumer<Promise<R>, RowSet<Row>> consumer) {
+    protected <R> Future<R> execute(String sql, Tuple params, BiConsumer<Promise<R>, RowSet<Row>> consumer) {
         Promise<R> promise = Promise.promise();
         this.sqlClient.preparedQuery(sql)
             .execute(params)

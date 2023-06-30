@@ -1,21 +1,23 @@
 package com.rory.apimock.dto.web;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Data
 public class ResponseInfo implements Serializable {
 
     @NotEmpty
+    @Size(max = 64)
     private String httpStatus;
-    private Map<String, String> headers;
+    private Map<String, Object> headers;
     private boolean dynamicBody;
     @NotEmpty
     private String body;
@@ -27,47 +29,39 @@ public class ResponseInfo implements Serializable {
     @Valid
     private Proxy proxy;
 
-
-    @JsonAnySetter
-    public void addHeader(String name, String value) {
-        this.headers = (this.headers != null ? this.headers : new LinkedHashMap<>());
-        this.headers.put(name, value);
-    }
-
-    @JsonAnyGetter
-    public Map<String, String> getResponseHeaders() {
-        return this.headers;
-    }
-
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class WebhookInfo {
+
+        @JsonIgnore
+        private String id;
+
         @NotEmpty
+        @Size(max = 1000)
         private String url;
         @NotEmpty
+        @Size(max = 64)
         private String method;
 
         private boolean dynamicBody;
 
-        private Map<String, String> headers;
+        private Map<String, Object> headers;
 
         @NotEmpty
         private String body;
-
-        @JsonAnySetter
-        public void addHeader(String name, String value) {
-            this.headers = (this.headers != null ? this.headers : new LinkedHashMap<>());
-            this.headers.put(name, value);
-        }
-
-        @JsonAnyGetter
-        public Map<String, String> getResponseHeaders() {
-            return this.headers;
-        }
     }
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Proxy {
+
+        @JsonIgnore
+        private String id;
+
         @NotEmpty
+        @Size(max = 64)
         private String url;
     }
 }

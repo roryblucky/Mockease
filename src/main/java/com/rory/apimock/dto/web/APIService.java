@@ -1,6 +1,8 @@
 package com.rory.apimock.dto.web;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,6 +13,7 @@ import java.util.List;
 public class APIService extends BaseDto {
 
     @NotEmpty
+    @Size(max = 200)
     private String name;
 
     @NotEmpty
@@ -18,14 +21,18 @@ public class APIService extends BaseDto {
 
     private String categoryName;
 
+    @Size(max = 4000)
     private String description;
 
     @NotEmpty
+    @Size(max = 1000)
     private String prefix;
 
     @NotEmpty
+    @Size(max = 64)
     private String version;
 
+    @Valid
     private List<APIPathDefinition> pathStubs;
 
     public APIService() {
