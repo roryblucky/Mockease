@@ -22,13 +22,12 @@ public class APICategoryHandler {
     public void createAPICategory(RoutingContext ctx) {
         RequestWrapper<APICategory> request = JacksonCodec.decodeValue(ctx.body().buffer(), new TypeReference<>() {
         });
-        BeanValidationUtil.getInstance().validate(request).onSuccess(valid -> {
-            apiCategoryDao.save(valid.getData())
-                .onSuccess(saved -> {
-                    ctx.json(ResponseWrapper.create(ctx, saved));
-                })
-                .onFailure(ctx::fail);
-        }).onFailure(ctx::fail);
+        BeanValidationUtil.getInstance().validate(request)
+            .onSuccess(valid ->
+                apiCategoryDao.save(valid.getData())
+                .onSuccess(saved -> ctx.json(ResponseWrapper.create(ctx, saved)))
+                .onFailure(ctx::fail))
+            .onFailure(ctx::fail);
     }
 
     public void getOneAPICategory(RoutingContext ctx) {
