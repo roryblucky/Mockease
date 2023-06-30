@@ -10,6 +10,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class APiCategoryList implements Serializable {
-    private List<APICategory> apiCategories;
+public class APIServiceList implements Serializable {
+    private List<APIService> apiServices;
 }

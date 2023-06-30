@@ -3,6 +3,7 @@ package com.rory.apimock.handlers.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.rory.apimock.dao.APIServiceDao;
 import com.rory.apimock.dto.web.APIService;
+import com.rory.apimock.dto.web.APIServiceList;
 import com.rory.apimock.dto.web.RequestWrapper;
 import com.rory.apimock.dto.web.ResponseWrapper;
 import com.rory.apimock.utils.BeanValidationUtil;
@@ -38,7 +39,7 @@ public class APIServiceHandler {
     }
 
     public void getAPIServices(RoutingContext ctx) {
-        ctx.json("ok");
+        apiServiceDao.findAll().onSuccess(results -> ctx.json(ResponseWrapper.ok(ctx, new APIServiceList(results)))).onFailure(ctx::fail);
     }
 
     public void deleteAPIServices(RoutingContext ctx) {

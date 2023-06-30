@@ -1,43 +1,40 @@
 package com.rory.apimock.dao;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
+import com.rory.apimock.db.tables.records.ApiCategoryRecord;
 import com.rory.apimock.dto.web.APICategory;
 import com.rory.apimock.exceptions.ResourceNotFoundException;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.ArrayTuple;
-import org.jooq.Record;
-import org.jooq.UpdateConditionStep;
-import org.jooq.conf.ParamType;
-import org.jooq.impl.DSL;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.UpdateSetMoreStep;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import static org.jooq.impl.DSL.*;
+import static com.rory.apimock.db.Tables.API_CATEGORY;
 
+@Slf4j
 public class APICategoryDao extends BaseDao<APICategory> {
     public APICategoryDao(SqlClient sqlClient) {
         super(sqlClient);
     }
 
     public Future<APICategory> save(APICategory dto) {
-
-        final String sql = "INSERT INTO API_CATEGORY(API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT) VALUES($1, $2, $3, $4, $5)";
         OffsetDateTime now = currentUTCTime();
         dto.setId(IdUtil.fastSimpleUUID());
+
+        final String sql = dslContext
+            .insertInto(API_CATEGORY, API_CATEGORY.API_CATEGORY_ID, API_CATEGORY.NAME,
+                API_CATEGORY.DESCRIPTION, API_CATEGORY.UPDATE_AT, API_CATEGORY.CREATE_AT)
+            .values(dto.getId(), dto.getName(), dto.getDescription(), now, now).getSQL();
         return this.execute(sql,
-            Tuple.from(Arrays.asList(dto.getId(),
-                dto.getName(),
-                dto.getDescription(),
-                now,
-                now)),
             (promise, rowSet) -> {
                 dto.setCreateAt(formatToString(now));
                 dto.setUpdateAt(formatToString(now));
@@ -47,12 +44,17 @@ public class APICategoryDao extends BaseDao<APICategory> {
 
     public Future<APICategory> update(String id, APICategory dto) {
         return this.checkExisted(id).compose(found -> {
-            //FIXME: Optional fields update?? dynamic SQL, HOW??
             OffsetDateTime now = currentUTCTime();
-            final String sql = "UPDATE API_CATEGORY SET NAME = $1, UPDATE_AT = $3 WHERE API_CATEGORY_ID = $4";
-            return this.execute(sql,
-                Tuple.from(Arrays.asList(dto.getName(), dto.getDescription(), now, id)),
-                (promise, rowSet) -> this.findOne(id).onSuccess(promise::complete).onFailure(promise::fail));
+
+            UpdateSetMoreStep<ApiCategoryRecord> sqlStep = dslContext.update(API_CATEGORY)
+                .set(API_CATEGORY.NAME, dto.getName())
+                .set(API_CATEGORY.UPDATE_AT, now);
+            if (StrUtil.isNotEmpty(dto.getDescription())) {
+                sqlStep.set(API_CATEGORY.DESCRIPTION, dto.getDescription());
+            }
+            final String finalSQl = sqlStep.where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
+
+            return this.execute(finalSQl, (promise, rowSet) -> this.findOne(id).onSuccess(promise::complete).onFailure(promise::fail));
         });
     }
 
@@ -64,14 +66,18 @@ public class APICategoryDao extends BaseDao<APICategory> {
         });
     }
 
-    public Future<Boolean> checkExisted(String id) {
-        final String sql = "SELECT count(1) as result FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
-        return this.existed(id, sql);
+    public Future<Void> checkExisted(String id) {
+        final String sql = dslContext.selectOne().from(API_CATEGORY).where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
+        return this.existed(sql);
     }
 
     public Future<APICategory> findOne(String id) {
-        final String sql = "SELECT API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT FROM API_CATEGORY WHERE API_CATEGORY_ID = $1";
-        return this.executeWithCollectorMapping(sql, Tuple.of(id), (promise, sqlResult) -> {
+        final String sql = dslContext.select(API_CATEGORY.API_CATEGORY_ID, API_CATEGORY.NAME,
+                API_CATEGORY.DESCRIPTION, API_CATEGORY.CREATE_AT, API_CATEGORY.UPDATE_AT)
+            .from(API_CATEGORY)
+            .where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
+
+        return this.executeWithCollectorMapping(sql, (promise, sqlResult) -> {
             Optional<APICategory> any = sqlResult.value().stream().findAny();
             if (any.isPresent()) {
                 promise.complete(any.get());
@@ -82,8 +88,10 @@ public class APICategoryDao extends BaseDao<APICategory> {
     }
 
     public Future<List<APICategory>> findAll() {
-        final String sql = "SELECT API_CATEGORY_ID, NAME, DESCRIPTION, CREATE_AT, UPDATE_AT FROM API_CATEGORY";
-        return this.executeWithCollectorMapping(sql, ArrayTuple.EMPTY, (promise, sqlResult) -> promise.complete(sqlResult.value()));
+        final String sql = dslContext.select(API_CATEGORY.API_CATEGORY_ID, API_CATEGORY.NAME,
+                API_CATEGORY.DESCRIPTION, API_CATEGORY.CREATE_AT, API_CATEGORY.UPDATE_AT)
+            .from(API_CATEGORY).getSQL();
+        return this.executeWithCollectorMapping(sql, (promise, sqlResult) -> promise.complete(sqlResult.value()));
     }
 
     protected Collector<Row, ?, List<APICategory>> rowCollector() {
@@ -95,14 +103,5 @@ public class APICategoryDao extends BaseDao<APICategory> {
                 row.getString("description")),
             Collectors.toList()
         );
-    }
-
-    public static void main(String[] args) {
-        UpdateConditionStep<Record> where = DSL.update(table("API_CATEGORY"))
-            .set(field("name"), "1")
-            .set(field("description"), "abc")
-            .where(condition(field("id").eq("123")));
-        String sql = where.getSQL(ParamType.INLINED);
-        System.out.println(sql);
     }
 }
