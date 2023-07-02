@@ -29,30 +29,16 @@ create table api_path_stub
     response_headers      text,
     response_dynamic_body boolean       not null,
     response_body         text          not null,
-    api_webhook_id        varchar(64),
-    api_proxy_id          varchar(64),
+    response_webhook_enabled       boolean       not null,
+    response_webhook_url           varchar(1000),
+    response_webhook_method   varchar(64),
+    response_webhook_headers       text,
+    response_webhook_dynamic_body  boolean       not null,
+    response_webhook_body          text,
+    response_proxy_enabled         boolean       not null,
+    response_proxy_url             varchar(1000),
     create_at             timestamptz   not null,
     update_at             timestamptz   not null
-);
-
-create table api_webhook
-(
-    api_webhook_id       varchar(64)   not null primary key,
-    url                  varchar(1000) not null,
-    method               varchar(64)   not null,
-    headers              text,
-    request_dynamic_body boolean       not null,
-    body                 text          not null,
-    create_at            timestamptz   not null,
-    update_at            timestamptz   not null
-);
-
-create table api_proxy
-(
-    api_proxy_id varchar(64)   not null primary key,
-    url          varchar(1000) not null,
-    create_at    timestamptz   not null,
-    update_at    timestamptz   not null
 );
 
 create table api_category
@@ -63,6 +49,3 @@ create table api_category
     create_at       timestamptz  not null,
     update_at       timestamptz  not null
 );
-
-
-

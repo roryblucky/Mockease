@@ -39,7 +39,11 @@ public class APIServiceHandler {
     }
 
     public void getAPIServices(RoutingContext ctx) {
-        apiServiceDao.findAll().onSuccess(results -> ctx.json(ResponseWrapper.ok(ctx, new APIServiceList(results)))).onFailure(ctx::fail);
+        apiServiceDao.findAll().onSuccess(results -> ctx.json(ResponseWrapper.success(ctx, new APIServiceList(results)))).onFailure(ctx::fail);
+    }
+
+    public void getOneAPIService(RoutingContext ctx) {
+
     }
 
     public void deleteAPIServices(RoutingContext ctx) {

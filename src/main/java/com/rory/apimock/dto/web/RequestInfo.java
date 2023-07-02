@@ -1,6 +1,5 @@
 package com.rory.apimock.dto.web;
 
-import io.vertx.core.json.JsonObject;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -21,15 +20,13 @@ public class RequestInfo implements Serializable {
 
     private boolean validationEnabled;
 
-    private String requestSchema;
+    private String schema;
 
     @NotEmpty
     private Map<String, Object> headers;
 
-    private JsonObject abc;
-
     private String body;
 
-    private boolean dynamicBody;
+    private boolean dynamicBodyEnabled;
 
 }

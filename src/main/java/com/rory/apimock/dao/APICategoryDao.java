@@ -81,9 +81,7 @@ public class APICategoryDao extends BaseDao<APICategory> {
     }
 
     public Future<APICategory> findOne(String id) {
-        final String sql = dslContext.select(API_CATEGORY.API_CATEGORY_ID, API_CATEGORY.NAME,
-                API_CATEGORY.DESCRIPTION, API_CATEGORY.CREATE_AT, API_CATEGORY.UPDATE_AT)
-            .from(API_CATEGORY)
+        final String sql = dslContext.selectFrom(API_CATEGORY)
             .where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
 
         return this.executeWithCollectorMapping(sql, (promise, sqlResult) -> {

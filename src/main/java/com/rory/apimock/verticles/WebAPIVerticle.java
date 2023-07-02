@@ -66,11 +66,12 @@ public class WebAPIVerticle extends BaseVerticle {
 
         apiRouter.post("/api-services").handler(apiServiceHandler::createAPIService);
         apiRouter.get("/api-services").handler(apiServiceHandler::getAPIServices);
+        apiRouter.get("/api-services/:serviceId").handler(apiServiceHandler::getOneAPIService);
         apiRouter.put("/api-services/:serviceId").handler(apiServiceHandler::updateAPIService);
         apiRouter.delete("/api-services/:serviceId").handler(apiServiceHandler::deleteAPIServices);
 
         apiRouter.post("/api-services/:serviceId/paths").handler(apiPathStubHandler::createPathStub);
-        apiRouter.get("/api-services/:serviceId/paths").handler(apiPathStubHandler::getPaths);
+        apiRouter.get("/api-services/:serviceId/paths/:pathId").handler(apiPathStubHandler::getPaths);
         apiRouter.put("/api-services/:serviceId/paths/:pathId").handler(apiPathStubHandler::updatePathStub);
         apiRouter.delete("/api-services/:serviceId/paths/:pathId").handler(apiPathStubHandler::deletePathStub);
 

@@ -6,6 +6,7 @@ import com.rory.apimock.dao.APIServiceDao;
 import com.rory.apimock.dto.web.APIPathDefinition;
 import com.rory.apimock.dto.web.RequestWrapper;
 import com.rory.apimock.dto.web.ResponseWrapper;
+import com.rory.apimock.utils.BeanValidationUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.JacksonCodec;
 import io.vertx.ext.web.RoutingContext;
@@ -32,20 +33,28 @@ public class APIPathStubHandler {
         });
         String serviceId = ctx.pathParam("serviceId");
         this.apiServiceDao.checkExisted(serviceId)
-            .compose(found -> this.apiPathStubDao.save(serviceId, request.getData()))
-            .onSuccess(path -> {
-                //TODO: Adding mocking route
-                ctx.json(ResponseWrapper.create(ctx, path));
-            })
+            .compose(found -> BeanValidationUtil.getInstance().validate(request.getData()))
+            .compose(validated -> this.apiPathStubDao.save(serviceId, request.getData()))
+            .onSuccess(saved -> ctx.json(ResponseWrapper.create(ctx, saved)))
             .onFailure(ctx::fail);
     }
 
     public void getPaths(RoutingContext ctx) {
+        final String serviceId = ctx.pathParam("serviceId");
+        final String pathId = ctx.pathParam("pathId");
+        this.apiPathStubDao.findOne(serviceId, pathId)
+            .onSuccess(paths -> ctx.json(ResponseWrapper.success(ctx, paths)))
+            .onFailure(ctx::fail);
     }
 
     public void updatePathStub(RoutingContext ctx) {
     }
 
     public void deletePathStub(RoutingContext ctx) {
+        final String serviceId = ctx.pathParam("serviceId");
+        final String pathId = ctx.pathParam("pathId");
+        this.apiPathStubDao.deleteOne(serviceId, pathId)
+            .onSuccess(deleted -> ctx.json(ResponseWrapper.noContent(ctx)))
+            .onFailure(ctx::fail);
     }
 }

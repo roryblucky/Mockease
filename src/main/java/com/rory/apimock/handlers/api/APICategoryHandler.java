@@ -32,12 +32,12 @@ public class APICategoryHandler {
 
     public void getOneAPICategory(RoutingContext ctx) {
         apiCategoryDao.findOne(ctx.pathParam("categoryId"))
-            .onSuccess(result -> ctx.json(ResponseWrapper.ok(ctx, result)))
+            .onSuccess(result -> ctx.json(ResponseWrapper.success(ctx, result)))
             .onFailure(ctx::fail);
     }
 
     public void getAPICategories(RoutingContext ctx) {
-        apiCategoryDao.findAll().onSuccess(result -> ctx.json(ResponseWrapper.ok(ctx, new APiCategoryList(result))))
+        apiCategoryDao.findAll().onSuccess(result -> ctx.json(ResponseWrapper.success(ctx, new APiCategoryList(result))))
             .onFailure(ctx::fail);
     }
 
@@ -46,7 +46,7 @@ public class APICategoryHandler {
         });
         BeanValidationUtil.getInstance().validate(request).onSuccess(valid -> {
             apiCategoryDao.update(ctx.pathParam("categoryId"), valid.getData())
-                .onSuccess(result -> ctx.json(ResponseWrapper.ok(ctx, result)))
+                .onSuccess(result -> ctx.json(ResponseWrapper.success(ctx, result)))
                 .onFailure(ctx::fail);
         }).onFailure(ctx::fail);
     }

@@ -38,7 +38,7 @@ public class ResponseWrapper<T> {
         return of(data, ctx.normalizedPath() + "/" + data.getId());
     }
 
-    public static <R> ResponseWrapper<R> ok(RoutingContext ctx, R data) {
+    public static <R> ResponseWrapper<R> success(RoutingContext ctx, R data) {
         ctx.response().setStatusCode(HttpResponseStatus.OK.code());
         return of(data);
     }

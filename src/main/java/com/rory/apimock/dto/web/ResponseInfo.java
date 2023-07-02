@@ -1,6 +1,5 @@
 package com.rory.apimock.dto.web;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -17,12 +16,20 @@ public class ResponseInfo implements Serializable {
     @NotEmpty
     @Size(max = 64)
     private String httpStatus;
+
+    @NotEmpty
     private Map<String, Object> headers;
-    private boolean dynamicBody;
+
+    private boolean dynamicBodyEnabled;
+
     @NotEmpty
     private String body;
     // response delay?
     // Fault mock?
+
+    private boolean webhookEnabled;
+    private boolean proxyEnabled;
+
     @Valid
     private WebhookInfo webhook;
 
@@ -34,8 +41,6 @@ public class ResponseInfo implements Serializable {
     @AllArgsConstructor
     public static class WebhookInfo {
 
-        @JsonIgnore
-        private String id;
 
         @NotEmpty
         @Size(max = 1000)
@@ -44,8 +49,9 @@ public class ResponseInfo implements Serializable {
         @Size(max = 64)
         private String method;
 
-        private boolean dynamicBody;
+        private boolean dynamicBodyEnabled;
 
+        @NotEmpty
         private Map<String, Object> headers;
 
         @NotEmpty
@@ -56,9 +62,6 @@ public class ResponseInfo implements Serializable {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Proxy {
-
-        @JsonIgnore
-        private String id;
 
         @NotEmpty
         @Size(max = 64)
