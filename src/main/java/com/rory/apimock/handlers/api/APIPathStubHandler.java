@@ -6,6 +6,7 @@ import com.rory.apimock.dao.APIServiceDao;
 import com.rory.apimock.dto.web.APIPathDefinition;
 import com.rory.apimock.dto.web.RequestWrapper;
 import com.rory.apimock.dto.web.ResponseWrapper;
+import com.rory.apimock.exceptions.ValidationException;
 import com.rory.apimock.utils.BeanValidationUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.JacksonCodec;
@@ -34,7 +35,15 @@ public class APIPathStubHandler {
         String serviceId = ctx.pathParam("serviceId");
         this.apiServiceDao.checkExisted(serviceId)
             .compose(found -> BeanValidationUtil.getInstance().validate(request.getData()))
-            .compose(validated -> this.apiPathStubDao.save(serviceId, request.getData()))
+            .compose(validated -> {
+                if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
+                    throw new ValidationException("Proxy is enabled but proxy info is not provided");
+                }
+                if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {
+                    throw new ValidationException("Webhook is enabled but webhook info is not provided");
+                }
+                return this.apiPathStubDao.save(serviceId, request.getData());
+            })
             .onSuccess(saved -> ctx.json(ResponseWrapper.create(ctx, saved)))
             .onFailure(ctx::fail);
     }
@@ -48,6 +57,22 @@ public class APIPathStubHandler {
     }
 
     public void updatePathStub(RoutingContext ctx) {
+        final String serviceId = ctx.pathParam("serviceId");
+        final String pathId = ctx.pathParam("pathId");
+        RequestWrapper<APIPathDefinition> request = JacksonCodec.decodeValue(ctx.body().buffer(), new TypeReference<>() {
+        });
+        BeanValidationUtil.getInstance().validate(request.getData())
+            .compose(validated -> {
+                if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
+                    throw new ValidationException("Proxy is enabled but proxy info is not provided");
+                }
+                if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {
+                    throw new ValidationException("Webhook is enabled but webhook info is not provided");
+                }
+                return apiPathStubDao.update(serviceId, pathId, request.getData());
+            })
+            .onSuccess(updated -> ctx.json(ResponseWrapper.success(ctx, updated)))
+            .onFailure(ctx::fail);
     }
 
     public void deletePathStub(RoutingContext ctx) {

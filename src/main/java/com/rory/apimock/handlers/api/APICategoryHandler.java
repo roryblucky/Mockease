@@ -23,10 +23,8 @@ public class APICategoryHandler {
         RequestWrapper<APICategory> request = JacksonCodec.decodeValue(ctx.body().buffer(), new TypeReference<>() {
         });
         BeanValidationUtil.getInstance().validate(request)
-            .onSuccess(valid ->
-                apiCategoryDao.save(valid.getData())
-                .onSuccess(saved -> ctx.json(ResponseWrapper.create(ctx, saved)))
-                .onFailure(ctx::fail))
+            .compose(valid -> apiCategoryDao.save(valid.getData()))
+            .onSuccess(saved -> ctx.json(ResponseWrapper.create(ctx, saved)))
             .onFailure(ctx::fail);
     }
 
@@ -44,11 +42,10 @@ public class APICategoryHandler {
     public void updateAPICategory(RoutingContext ctx) {
         RequestWrapper<APICategory> request = JacksonCodec.decodeValue(ctx.body().buffer(), new TypeReference<>() {
         });
-        BeanValidationUtil.getInstance().validate(request).onSuccess(valid -> {
-            apiCategoryDao.update(ctx.pathParam("categoryId"), valid.getData())
-                .onSuccess(result -> ctx.json(ResponseWrapper.success(ctx, result)))
-                .onFailure(ctx::fail);
-        }).onFailure(ctx::fail);
+        BeanValidationUtil.getInstance().validate(request).
+            compose(valid -> apiCategoryDao.update(ctx.pathParam("categoryId"), valid.getData()))
+            .onSuccess(result -> ctx.json(ResponseWrapper.success(ctx, result)))
+            .onFailure(ctx::fail);
     }
 
     public void deleteAPICategory(RoutingContext ctx) {

@@ -1,6 +1,7 @@
 package com.rory.apimock.dao;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.rory.apimock.db.tables.records.ApiPathStubRecord;
 import com.rory.apimock.dto.web.APIPathDefinition;
 import com.rory.apimock.dto.web.RequestInfo;
@@ -11,6 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import org.jooq.InsertSetMoreStep;
+import org.jooq.UpdateSetMoreStep;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -93,6 +95,54 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
             .and(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
             .getSQL();
         return this.execute(sql, (promise, rowSet) -> promise.complete());
+    }
+
+    public Future<APIPathDefinition> update(String serviceId, String pathId, APIPathDefinition dto) {
+        OffsetDateTime now = currentUTCTime();
+
+        UpdateSetMoreStep<ApiPathStubRecord> updateStep = dslContext.update(API_PATH_STUB)
+            .set(API_PATH_STUB.NAME, dto.getName())
+            .set(API_PATH_STUB.OPERATION_ID, dto.getOperationId())
+            .set(API_PATH_STUB.UPDATE_AT, now)
+            .set(API_PATH_STUB.PATH, dto.getRequest().getPath())
+            .set(API_PATH_STUB.METHOD, dto.getRequest().getMethod())
+            .set(API_PATH_STUB.REQUEST_HEADERS, new JsonObject(dto.getRequest().getHeaders()).encode())
+            .set(API_PATH_STUB.VALIDATION_ENABLED, dto.getRequest().isValidationEnabled())
+            .set(API_PATH_STUB.REQUEST_DYNAMIC_BODY, dto.getRequest().isDynamicBodyEnabled())
+            .set(API_PATH_STUB.RESPONSE_HTTP_STATUS, dto.getResponse().getHttpStatus())
+            .set(API_PATH_STUB.RESPONSE_HEADERS, new JsonObject(dto.getResponse().getHeaders()).encode())
+            .set(API_PATH_STUB.RESPONSE_DYNAMIC_BODY, dto.getResponse().isDynamicBodyEnabled())
+            .set(API_PATH_STUB.RESPONSE_BODY, dto.getRequest().getBody())
+            .set(API_PATH_STUB.RESPONSE_WEBHOOK_ENABLED, dto.getResponse().isWebhookEnabled())
+            .set(API_PATH_STUB.RESPONSE_PROXY_ENABLED, dto.getResponse().isProxyEnabled());
+
+        if (StrUtil.isNotEmpty(dto.getDescription())) {
+            updateStep.set(API_PATH_STUB.DESCRIPTION, dto.getDescription());
+        }
+        //request optional fields
+        if (StrUtil.isNotEmpty(dto.getRequest().getSchema())) {
+            updateStep.set(API_PATH_STUB.REQUEST_SCHEMA, dto.getRequest().getSchema());
+        }
+        if (StrUtil.isNotEmpty(dto.getRequest().getBody())) {
+            updateStep.set(API_PATH_STUB.REQUEST_BODY, dto.getRequest().getBody());
+        }
+        //response optional fields
+        if (dto.getResponse().isWebhookEnabled()) {
+            updateStep.set(API_PATH_STUB.RESPONSE_WEBHOOK_URL, dto.getResponse().getWebhook().getUrl())
+                .set(API_PATH_STUB.RESPONSE_WEBHOOK_METHOD, dto.getResponse().getWebhook().getMethod())
+                .set(API_PATH_STUB.RESPONSE_WEBHOOK_HEADERS, new JsonObject(dto.getResponse().getWebhook().getHeaders()).encode())
+                .set(API_PATH_STUB.RESPONSE_WEBHOOK_BODY, dto.getResponse().getWebhook().getBody());
+        }
+
+        if (dto.getResponse().isProxyEnabled()) {
+            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_URL, dto.getResponse().getProxy().getUrl());
+        }
+
+        final String updateSQL = updateStep.where(API_PATH_STUB.API_PATH_STUB_ID.eq(pathId))
+            .and(API_PATH_STUB.API_SERVICE_ID.eq(serviceId)).getSQL();
+
+        return this.execute(updateSQL, ((promise, rowSet) ->
+            this.findOne(serviceId, pathId).onSuccess(promise::complete).onFailure(promise::fail)));
     }
 
     @Override
