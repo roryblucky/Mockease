@@ -113,15 +113,15 @@ public class APIServiceDao extends BaseDao<APIService> {
     @Override
     protected Collector<Row, ?, List<APIService>> rowMappingCollector() {
         return Collectors.mapping(
-            row -> new APIService(row.getString("api_service_id"),
-                formatToString(row.getOffsetDateTime("create_at")),
-                formatToString(row.getOffsetDateTime("update_at")),
-                row.getString("name"),
-                row.getString("category_id"),
+            row -> new APIService(row.getString(API_SERVICE.API_SERVICE_ID.getName().toLowerCase()),
+                formatToString(row.getOffsetDateTime(API_SERVICE.CREATE_AT.getName().toLowerCase())),
+                formatToString(row.getOffsetDateTime(API_SERVICE.UPDATE_AT.getName().toLowerCase())),
+                row.getString(API_SERVICE.NAME.getName().toLowerCase()),
+                row.getString(API_SERVICE.CATEGORY_ID.getName().toLowerCase()),
                 row.getString("category_name"),
-                row.getString("description"),
-                row.getString("prefix"),
-                row.getString("version")),
+                row.getString(API_SERVICE.DESCRIPTION.getName().toLowerCase()),
+                row.getString(API_SERVICE.PREFIX.getName().toLowerCase()),
+                row.getString(API_SERVICE.VERSION.getName().toLowerCase())),
             Collectors.toList()
         );
     }

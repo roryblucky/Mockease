@@ -9,10 +9,6 @@ import io.vertx.ext.web.RoutingContext;
 public class NotFoundErrorHandler implements Handler<RoutingContext> {
 
 
-    public static NotFoundErrorHandler create() {
-        return new NotFoundErrorHandler();
-    }
-
     @Override
     public void handle(RoutingContext ctx) {
         ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code());

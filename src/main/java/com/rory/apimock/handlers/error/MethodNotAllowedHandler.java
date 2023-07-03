@@ -8,11 +8,6 @@ import io.vertx.ext.web.RoutingContext;
 
 public class MethodNotAllowedHandler implements Handler<RoutingContext> {
 
-
-    public static MethodNotAllowedHandler create() {
-        return new MethodNotAllowedHandler();
-    }
-
     @Override
     public void handle(RoutingContext ctx) {
         ctx.response().setStatusCode(HttpResponseStatus.METHOD_NOT_ALLOWED.code());

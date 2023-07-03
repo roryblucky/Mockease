@@ -97,11 +97,11 @@ public class APICategoryDao extends BaseDao<APICategory> {
 
     protected Collector<Row, ?, List<APICategory>> rowMappingCollector() {
         return Collectors.mapping(
-            row -> new APICategory(row.getString("api_category_id"),
-                formatToString(row.getOffsetDateTime("create_at")),
-                formatToString(row.getOffsetDateTime("update_at")),
-                row.getString("name"),
-                row.getString("description")),
+            row -> new APICategory(row.getString(API_CATEGORY.API_CATEGORY_ID.getName().toLowerCase()),
+                formatToString(row.getOffsetDateTime(API_CATEGORY.CREATE_AT.getName().toLowerCase())),
+                formatToString(row.getOffsetDateTime(API_CATEGORY.UPDATE_AT.getName().toLowerCase())),
+                row.getString(API_CATEGORY.NAME.getName().toLowerCase()),
+                row.getString(API_CATEGORY.DESCRIPTION.getName().toLowerCase())),
             Collectors.toList()
         );
     }
