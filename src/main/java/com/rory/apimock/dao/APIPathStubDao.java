@@ -16,7 +16,6 @@ import org.jooq.UpdateSetMoreStep;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -74,25 +73,37 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
         }));
     }
 
+    public Future<List<APIPathDefinition>> findByServiceId(String serviceId) {
+        final String sql = dslContext.selectFrom(API_PATH_STUB)
+            .where(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
+            .getSQL();
+        return this.executeWithCollectorMapping(sql, (promise, listSqlResult) ->
+           promise.complete(listSqlResult.value())
+        );
+    }
+
     public Future<APIPathDefinition> findOne(String serviceId, String id) {
         final String sql = dslContext.selectFrom(API_PATH_STUB)
             .where(API_PATH_STUB.API_PATH_STUB_ID.eq(id))
             .and(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
             .getSQL();
-        return this.executeWithCollectorMapping(sql, (promise, sqlResult) -> {
-            Optional<APIPathDefinition> any = sqlResult.value().stream().findAny();
-            if (any.isPresent()) {
-                promise.complete(any.get());
-            } else {
-                promise.fail(new ResourceNotFoundException());
-            }
-        });
+        return this.executeWithCollectorMapping(sql, (promise, sqlResult) ->
+           sqlResult.value().stream().findAny()
+               .ifPresentOrElse(promise::complete, () -> promise.fail(new ResourceNotFoundException()))
+        );
     }
 
     public Future<Void> deleteOne(String serviceId, String id) {
         final String sql = dslContext.deleteFrom(API_PATH_STUB)
             .where(API_PATH_STUB.API_PATH_STUB_ID.eq(id))
             .and(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
+            .getSQL();
+        return this.execute(sql, (promise, rowSet) -> promise.complete());
+    }
+
+    public Future<Void> deleteByServiceId(String serviceId) {
+        final String sql = dslContext.deleteFrom(API_PATH_STUB)
+            .where(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
             .getSQL();
         return this.execute(sql, (promise, rowSet) -> promise.complete());
     }

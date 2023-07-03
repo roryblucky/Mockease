@@ -14,7 +14,6 @@ import org.jooq.UpdateSetMoreStep;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -84,14 +83,9 @@ public class APICategoryDao extends BaseDao<APICategory> {
         final String sql = dslContext.selectFrom(API_CATEGORY)
             .where(API_CATEGORY.API_CATEGORY_ID.eq(id)).getSQL();
 
-        return this.executeWithCollectorMapping(sql, (promise, sqlResult) -> {
-            Optional<APICategory> any = sqlResult.value().stream().findAny();
-            if (any.isPresent()) {
-                promise.complete(any.get());
-            } else {
-                promise.fail(new ResourceNotFoundException());
-            }
-        });
+        return this.executeWithCollectorMapping(sql, (promise, sqlResult) ->
+            sqlResult.value().stream().findAny()
+                .ifPresentOrElse(promise::complete, () -> promise.fail(new ResourceNotFoundException())));
     }
 
     public Future<List<APICategory>> findAll() {
