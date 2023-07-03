@@ -49,4 +49,3 @@ create table api_category
     create_at       timestamptz  not null,
     update_at       timestamptz  not null
 );
-select * from api_path_stub
