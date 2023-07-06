@@ -2,6 +2,7 @@ package com.rory.apimock.dto.web;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,9 +14,8 @@ import java.util.Map;
 @Data
 public class ResponseInfo implements Serializable {
 
-    @NotEmpty
-    @Size(max = 64)
-    private String httpStatus;
+    @NotNull
+    private Integer httpStatus;
 
     @NotEmpty
     private Map<String, Object> headers;

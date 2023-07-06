@@ -26,7 +26,7 @@ public class APIService extends BaseDto {
 
     @NotEmpty
     @Size(max = 1000)
-    private String prefix;
+    private String basePath;
 
     @NotEmpty
     @Size(max = 64)
@@ -39,31 +39,31 @@ public class APIService extends BaseDto {
     }
 
     public APIService(String id, String createAt, String updateAt, String name, String categoryId, String categoryName,
-                       String description, String prefix, String version) {
+                      String description, String basePath, String version) {
         super(id, createAt, updateAt);
         this.name = name;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.description = description;
-        this.prefix = prefix;
+        this.basePath = basePath;
         this.version = version;
     }
 
-    public APIService(String id, String createAt, String updateAt, String name, String categoryId, String prefix, String version) {
+    public APIService(String id, String createAt, String updateAt, String name, String categoryId, String basePath, String version) {
         super(id, createAt, updateAt);
         this.name = name;
         this.categoryId = categoryId;
-        this.prefix = prefix;
+        this.basePath = basePath;
         this.version = version;
     }
 
     public APIService(String id, String createAt, String updateAt, String name, String categoryId,
-                      String description, String prefix, String version, List<APIPathDefinition> pathStubs) {
+                      String description, String basePath, String version, List<APIPathDefinition> pathStubs) {
         super(id, createAt, updateAt);
         this.name = name;
         this.categoryId = categoryId;
         this.description = description;
-        this.prefix = prefix;
+        this.basePath = basePath;
         this.version = version;
         this.pathStubs = pathStubs;
     }

@@ -48,13 +48,13 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
             .set(API_PATH_STUB.RESPONSE_DYNAMIC_BODY, dto.getResponse().isDynamicBodyEnabled())
             .set(API_PATH_STUB.RESPONSE_BODY, dto.getResponse().getBody())
             .set(API_PATH_STUB.RESPONSE_WEBHOOK_ENABLED, dto.getResponse().isWebhookEnabled())
-            .set(API_PATH_STUB.RESPONSE_WEBHOOK_DYNAMIC_BODY, dto.getResponse().getWebhook().isDynamicBodyEnabled())
             .set(API_PATH_STUB.RESPONSE_PROXY_ENABLED, dto.getResponse().isProxyEnabled())
             .set(API_PATH_STUB.UPDATE_AT, now)
             .set(API_PATH_STUB.CREATE_AT, now);
 
         if (dto.getResponse().isWebhookEnabled()) {
             insertSQL
+                .set(API_PATH_STUB.RESPONSE_WEBHOOK_DYNAMIC_BODY, dto.getResponse().getWebhook().isDynamicBodyEnabled())
                 .set(API_PATH_STUB.RESPONSE_WEBHOOK_URL, dto.getResponse().getWebhook().getUrl())
                 .set(API_PATH_STUB.RESPONSE_WEBHOOK_METHOD, dto.getResponse().getWebhook().getMethod())
                 .set(API_PATH_STUB.RESPONSE_WEBHOOK_HEADERS, new JsonObject(dto.getResponse().getWebhook().getHeaders()).encode())
@@ -183,7 +183,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
                 requestInfo.setDynamicBodyEnabled(row.getBoolean(API_PATH_STUB.REQUEST_DYNAMIC_BODY.getName().toLowerCase()));
                 requestInfo.setBody(row.getString(API_PATH_STUB.REQUEST_BODY.getName().toLowerCase()));
                 //response
-                responseInfo.setHttpStatus(row.getString(API_PATH_STUB.RESPONSE_HTTP_STATUS.getName().toLowerCase()));
+                responseInfo.setHttpStatus(row.getInteger(API_PATH_STUB.RESPONSE_HTTP_STATUS.getName().toLowerCase()));
                 responseInfo.setHeaders(new JsonObject(row.getString(API_PATH_STUB.RESPONSE_HEADERS.getName().toLowerCase())).getMap());
                 responseInfo.setDynamicBodyEnabled(row.getBoolean(API_PATH_STUB.RESPONSE_DYNAMIC_BODY.getName().toLowerCase()));
                 responseInfo.setBody(row.getString(API_PATH_STUB.RESPONSE_BODY.getName().toLowerCase()));

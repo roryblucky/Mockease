@@ -1,7 +1,10 @@
 package com.rory.apimock.verticles;
 
+import com.rory.apimock.dto.APIStub;
 import com.rory.apimock.dto.Constants;
 import com.rory.apimock.handlers.api.DynamicMockHandler;
+import com.rory.apimock.handlers.error.MethodNotAllowedHandler;
+import com.rory.apimock.handlers.error.NotFoundErrorHandler;
 import com.rory.apimock.utils.RouteBuilder;
 import com.rory.apimock.utils.RouterBuilder;
 import io.vertx.core.Context;
@@ -22,7 +25,7 @@ public class MockVerticle extends BaseVerticle {
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
         this.mockSubRouter = Router.router(vertx);
-        this.dynamicMockHandler = new DynamicMockHandler(mockSubRouter);
+        this.dynamicMockHandler = new DynamicMockHandler(vertx, mockSubRouter);
     }
 
     @Override
@@ -39,16 +42,17 @@ public class MockVerticle extends BaseVerticle {
     }
 
     private void initConsumers() {
-        vertx.eventBus().consumer(Constants.API_MOCK_CREATE_ADDRESS).handler(dynamicMockHandler::createMockService);
-        vertx.eventBus().consumer(Constants.API_MOCK_UPDATE_ADDRESS).handler(dynamicMockHandler::createMockService);
-        vertx.eventBus().consumer(Constants.API_MOCK_DELETE_ADDRESS).handler(dynamicMockHandler::createMockService);
-        vertx.eventBus().consumer(Constants.API_MOCK_CLEAR_ADDRESS).handler(dynamicMockHandler::createMockService);
+        vertx.eventBus().<APIStub>consumer(Constants.API_PATH_STUB_CREATE_ADDRESS).handler(dynamicMockHandler::createPathStubRoute);
+        vertx.eventBus().<APIStub>consumer(Constants.API_PATH_STUB_UPDATE_ADDRESS).handler(dynamicMockHandler::updatePathStubRoute);
+        vertx.eventBus().<APIStub>consumer(Constants.API_PATH_STUB_DELETE_ADDRESS).handler(dynamicMockHandler::removePathStubRoute);
     }
 
     private Router configRouter() {
         final Router mockRouter = RouterBuilder.getInstance()
             .router(vertx).build();
 
+        mockRouter.errorHandler(405, new MethodNotAllowedHandler());
+        mockRouter.errorHandler(404, new NotFoundErrorHandler());
         RouteBuilder.getInstance(mockRouter.route("/mock/*")).commonHandler()
             .mountSubRouter(mockSubRouter).build();
 

@@ -40,7 +40,7 @@ public class APIServiceDao extends BaseDao<APIService> {
 
             final String sql = dslContext.insertInto(API_SERVICE, API_SERVICE.API_SERVICE_ID, API_SERVICE.NAME, API_SERVICE.CATEGORY_ID,
                     API_SERVICE.DESCRIPTION, API_SERVICE.PREFIX, API_SERVICE.VERSION, API_SERVICE.CREATE_AT, API_SERVICE.UPDATE_AT)
-                .values(dto.getId(), dto.getName(), dto.getCategoryId(), dto.getDescription(), dto.getPrefix(),
+                .values(dto.getId(), dto.getName(), dto.getCategoryId(), dto.getDescription(), dto.getBasePath(),
                     dto.getVersion(), now, now).getSQL();
 
             return this.execute(sql,
@@ -58,7 +58,7 @@ public class APIServiceDao extends BaseDao<APIService> {
             UpdateSetMoreStep<ApiServiceRecord> updateStep = dslContext.update(API_SERVICE)
                 .set(API_SERVICE.NAME, dto.getName())
                 .set(API_SERVICE.CATEGORY_ID, dto.getCategoryId())
-                .set(API_SERVICE.PREFIX, dto.getPrefix())
+                .set(API_SERVICE.PREFIX, dto.getBasePath())
                 .set(API_SERVICE.VERSION, dto.getVersion())
                 .set(API_SERVICE.UPDATE_AT, now);
             if (StrUtil.isNotEmpty(dto.getDescription())) {
