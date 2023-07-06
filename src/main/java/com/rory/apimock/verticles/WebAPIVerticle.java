@@ -29,7 +29,7 @@ public class WebAPIVerticle extends BaseVerticle {
     @Override
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
-        this.apiServiceHandler = new APIServiceHandler(sqlClient);
+        this.apiServiceHandler = new APIServiceHandler(vertx, sqlClient);
         this.categoryHandler = new APICategoryHandler(sqlClient);
         this.apiPathStubHandler = new APIPathStubHandler(vertx, sqlClient);
     }

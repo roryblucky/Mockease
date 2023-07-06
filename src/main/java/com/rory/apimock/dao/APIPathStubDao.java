@@ -123,7 +123,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
             .set(API_PATH_STUB.RESPONSE_HTTP_STATUS, dto.getResponse().getHttpStatus())
             .set(API_PATH_STUB.RESPONSE_HEADERS, new JsonObject(dto.getResponse().getHeaders()).encode())
             .set(API_PATH_STUB.RESPONSE_DYNAMIC_BODY, dto.getResponse().isDynamicBodyEnabled())
-            .set(API_PATH_STUB.RESPONSE_BODY, dto.getRequest().getBody())
+            .set(API_PATH_STUB.RESPONSE_BODY, dto.getResponse().getBody())
             .set(API_PATH_STUB.RESPONSE_WEBHOOK_ENABLED, dto.getResponse().isWebhookEnabled())
             .set(API_PATH_STUB.RESPONSE_PROXY_ENABLED, dto.getResponse().isProxyEnabled());
 

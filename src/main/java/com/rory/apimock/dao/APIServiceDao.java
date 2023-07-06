@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.rory.apimock.db.tables.records.ApiServiceRecord;
 import com.rory.apimock.dto.web.APIService;
 import com.rory.apimock.exceptions.ResourceNotFoundException;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
@@ -93,6 +94,13 @@ public class APIServiceDao extends BaseDao<APIService> {
                         .onFailure(promise::fail),
                 () -> promise.fail(new ResourceNotFoundException()))
         );
+    }
+
+    public Future<CompositeFuture> findAllServiceWithDetails() {
+        return this.findAll().compose(list -> {
+            List<Future<APIService>> collect = list.stream().map(apiService -> this.findOne(apiService.getId())).collect(Collectors.toList());
+            return Future.all(collect);
+        });
     }
 
 

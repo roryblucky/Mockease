@@ -18,8 +18,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.sqlclient.SqlClient;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.rory.apimock.dto.Constants.API_PATH_STUB_CREATE_ADDRESS;
-import static com.rory.apimock.dto.Constants.API_PATH_STUB_DELETE_ADDRESS;
+import static com.rory.apimock.dto.Constants.*;
 
 @Slf4j
 public class APIPathStubHandler {
@@ -67,7 +66,6 @@ public class APIPathStubHandler {
                         } else {
                             ctx.json(ResponseWrapper.success(ctx, result.resultAt(1)));
                         }
-
                     });
             })
             .onFailure(ctx::fail);
@@ -96,7 +94,19 @@ public class APIPathStubHandler {
                 }
                 return apiPathStubDao.update(serviceId, pathId, request.getData());
             })
-            .onSuccess(updated -> ctx.json(ResponseWrapper.success(ctx, updated)))
+            .compose(updated -> Future.all(this.apiServiceDao.findOne(serviceId), Future.succeededFuture(updated)))
+            .onSuccess(updated ->
+                vertx.eventBus().request(API_PATH_STUB_UPDATE_ADDRESS,
+                    new APIStub((APIService) updated.resultAt(0), updated.resultAt(1)),
+                    msg -> {
+                        if(msg.failed()) {
+                            //TODO: Other exception handling?
+                            String message = msg.cause().getMessage();
+                            ctx.fail(new DuplicateMockRouteException(message));
+                        } else {
+                            ctx.json(ResponseWrapper.success(ctx, updated.resultAt(1)));
+                        }
+                }))
             .onFailure(ctx::fail);
     }
 
