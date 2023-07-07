@@ -2,15 +2,13 @@ package com.rory.apimock.handlers.mock;
 
 import com.rory.apimock.dto.APIStub;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.proxy.handler.ProxyHandler;
-import io.vertx.httpproxy.HttpProxy;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.URI;
 import java.util.function.Predicate;
 
 import static com.rory.apimock.dto.Constants.API_MOCK_WEBHOOK_ADDRESS;
@@ -51,11 +49,7 @@ public class MockRouterHelper {
         this.configContentType(apiStub, newRoute);
 
         if (apiStub.isProxyEnabled()) {
-            //TODO: optimized this client
-            HttpClient httpClient = vertx.createHttpClient();
-            HttpProxy proxy = HttpProxy.reverseProxy(httpClient);
-            proxy.origin(apiStub.getProxyPort(), apiStub.getProxyHost());
-            newRoute.handler(ProxyHandler.create(proxy));
+            newRoute.handler(new MockProxyHandler(vertx, apiStub));
         } else {
             //setting handler;
             newRoute.handler(ctx -> {
@@ -90,5 +84,10 @@ public class MockRouterHelper {
         }
     }
 
+    public static void main(String[] args) {
+        URI uri = URI.create("https://httpbin.org/anything");
+        System.out.println(uri.getHost());
+
+    }
 
 }

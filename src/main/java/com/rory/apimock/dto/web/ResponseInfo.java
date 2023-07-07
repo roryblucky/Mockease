@@ -39,7 +39,7 @@ public class ResponseInfo implements Serializable {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class WebhookInfo {
+    public static class WebhookInfo implements Serializable {
 
 
         @NotEmpty
@@ -60,7 +60,7 @@ public class ResponseInfo implements Serializable {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Proxy {
+    public static class Proxy implements Serializable {
 
         @NotEmpty
         private String host;

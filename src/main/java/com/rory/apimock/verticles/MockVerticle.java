@@ -6,13 +6,13 @@ import com.rory.apimock.dto.web.APIService;
 import com.rory.apimock.handlers.error.MethodNotAllowedHandler;
 import com.rory.apimock.handlers.error.NotFoundErrorHandler;
 import com.rory.apimock.handlers.mock.DynamicMockHandler;
+import com.rory.apimock.utils.JsonPointerUtil;
 import com.rory.apimock.utils.RouteBuilder;
 import com.rory.apimock.utils.RouterBuilder;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.ext.web.Router;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,12 +36,14 @@ public class MockVerticle extends BaseVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+
+        System.setProperty("vertx.disableDnsResolver", "true");
+
         this.initConsumers();
 
         this.configRouter().compose(router ->
                 this.createAndStartHttpServer(router,
-                    (int) JsonPointer.from("/http/mock/server/port").queryJsonOrDefault(config(),
-                        8081)))
+                    JsonPointerUtil.queryJsonOrDefault("/http/mock/server/host", config(), 8081)))
             .onSuccess(server -> {
                 log.info("Mock Server started at {}", server.actualPort());
                 startPromise.complete();
@@ -66,11 +68,11 @@ public class MockVerticle extends BaseVerticle {
             .router(vertx).build();
         mockRouter.errorHandler(405, new MethodNotAllowedHandler());
         mockRouter.errorHandler(404, new NotFoundErrorHandler());
-        RouteBuilder.getInstance(mockRouter.route("/mock/*")).commonHandler()
+        RouteBuilder.getInstance(mockRouter.route(API_MOCK_ENDPOINT_PREFIX_WILDCARD)).commonHandler()
             .mountSubRouter(mockSubRouter).build();
-        this.loadingExistedRoute().onSuccess(ok -> {
-            promise.complete(mockRouter);
-        }).onFailure(promise::fail);
+        this.loadingExistedRoute()
+            .onSuccess(ok -> promise.complete(mockRouter))
+            .onFailure(promise::fail);
 
         return promise.future();
     }

@@ -6,12 +6,12 @@ import com.rory.apimock.handlers.api.APIServiceHandler;
 import com.rory.apimock.handlers.error.APIFailureHandler;
 import com.rory.apimock.handlers.error.MethodNotAllowedHandler;
 import com.rory.apimock.handlers.error.NotFoundErrorHandler;
+import com.rory.apimock.utils.JsonPointerUtil;
 import com.rory.apimock.utils.RouteBuilder;
 import com.rory.apimock.utils.RouterBuilder;
 import io.vertx.core.Context;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +47,7 @@ public class WebAPIVerticle extends BaseVerticle {
             .mountSubRouter(this.apiRouter());
 
         this.createAndStartHttpServer(router,
-                (int) JsonPointer.from("/http/api/server/port").queryJsonOrDefault(config(), 8080))
+                JsonPointerUtil.queryJsonOrDefault("/http/api/server/host", config(), 8080))
             .onSuccess(server -> {
                 log.info("Web server start at {}", server.actualPort());
                 startPromise.complete();
