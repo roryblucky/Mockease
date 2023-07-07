@@ -54,7 +54,6 @@ public class ResponseInfo implements Serializable {
         @NotEmpty
         private Map<String, Object> headers;
 
-        @NotEmpty
         private String body;
     }
 
@@ -64,7 +63,9 @@ public class ResponseInfo implements Serializable {
     public static class Proxy {
 
         @NotEmpty
-        @Size(max = 64)
-        private String url;
+        private String host;
+
+        @NotNull
+        private Integer port;
     }
 }

@@ -13,45 +13,6 @@ import java.util.stream.Collectors;
 public class APIStub implements Serializable {
 
 
-    public APIStub(String apiServiceId, String operationId) {
-        this.apiServiceId = apiServiceId;
-        this.operationId = operationId;
-    }
-
-    public APIStub(APIService apiService, APIPathDefinition pathDefinition) {
-        //service
-        this.apiServiceId = apiService.getId();
-        this.version = apiService.getVersion();
-        this.basePath =  apiService.getBasePath();
-        //Request
-        this.operationId = pathDefinition.getOperationId();
-        this.path = pathDefinition.getRequest().getPath();
-        this.method = pathDefinition.getRequest().getMethod();
-        this.validationEnabled = pathDefinition.getRequest().isValidationEnabled();
-        this.requestSchema = pathDefinition.getRequest().getSchema();
-        this.requestHeaders = convert(pathDefinition.getRequest().getHeaders());
-        this.requestBody = pathDefinition.getRequest().getBody();
-        this.requestDynamicBodyEnabled = pathDefinition.getRequest().isDynamicBodyEnabled();
-        //Response
-        final ResponseInfo response = pathDefinition.getResponse();
-        this.responseHttpStatus = response.getHttpStatus();
-        this.responseHeaders = convert(response.getHeaders());
-        this.responseDynamicBodyEnabled = response.isDynamicBodyEnabled();
-        this.responseBody = response.getBody();
-        this.webhookEnabled = response.isWebhookEnabled();
-        this.proxyEnabled = response.isProxyEnabled();
-        if (response.getWebhook() != null) {
-            this.webhookUrl = response.getWebhook().getUrl();
-            this.webhookMethod = response.getWebhook().getMethod();
-            this.webhookDynamicBodyEnabled = response.getWebhook().isDynamicBodyEnabled();
-            this.webhookHeaders = convert(response.getWebhook().getHeaders());
-            this.webhookBody = response.getWebhook().getBody();
-        }
-        if (response.getProxy() != null) {
-            this.proxyUrl = response.getProxy().getUrl();
-        }
-    }
-
     private String apiServiceId;
     private String version;
     private String basePath;
@@ -61,16 +22,7 @@ public class APIStub implements Serializable {
 
     private String method;
 
-    private boolean validationEnabled;
-
-    private String requestSchema;
-
-    private Map<String, String> requestHeaders;
-
-    private String requestBody;
-
-    private boolean requestDynamicBodyEnabled;
-
+    private String requestContentType;
 
     private Integer responseHttpStatus;
 
@@ -95,7 +47,47 @@ public class APIStub implements Serializable {
 
     private String webhookBody;
 
-    private String proxyUrl;
+    private String proxyHost;
+
+    private Integer proxyPort;
+
+
+    public APIStub(String apiServiceId, String operationId) {
+        this.apiServiceId = apiServiceId;
+        this.operationId = operationId;
+    }
+
+    public APIStub(APIService apiService, APIPathDefinition pathDefinition) {
+        //service
+        this.apiServiceId = apiService.getId();
+        this.version = apiService.getVersion();
+        this.basePath =  apiService.getBasePath();
+        //Request
+        this.operationId = pathDefinition.getOperationId();
+        this.path = pathDefinition.getRequest().getPath();
+        this.method = pathDefinition.getRequest().getMethod();
+        this.requestContentType = pathDefinition.getRequest().getContentType();
+        //Response
+        final ResponseInfo response = pathDefinition.getResponse();
+        this.responseHttpStatus = response.getHttpStatus();
+        this.responseHeaders = convert(response.getHeaders());
+        this.responseDynamicBodyEnabled = response.isDynamicBodyEnabled();
+        this.responseBody = response.getBody();
+        this.webhookEnabled = response.isWebhookEnabled();
+        this.proxyEnabled = response.isProxyEnabled();
+        if (response.getWebhook() != null) {
+            this.webhookUrl = response.getWebhook().getUrl();
+            this.webhookMethod = response.getWebhook().getMethod();
+            this.webhookDynamicBodyEnabled = response.getWebhook().isDynamicBodyEnabled();
+            this.webhookHeaders = convert(response.getWebhook().getHeaders());
+            this.webhookBody = response.getWebhook().getBody();
+        }
+        if (response.getProxy() != null) {
+            this.proxyHost = response.getProxy().getHost();
+            this.proxyPort = response.getProxy().getPort();
+        }
+    }
+
 
     private Map<String, String> convert(Map<String, Object> map) {
         return map.entrySet().stream()
@@ -104,7 +96,7 @@ public class APIStub implements Serializable {
 
 
     public String getIdentifier() {
-        return this.apiServiceId + this.operationId;
+        return String.format("%s-%s", this.apiServiceId, this.operationId);
     }
 
     public String getWholeUrl() {

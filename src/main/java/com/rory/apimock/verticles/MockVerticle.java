@@ -55,6 +55,9 @@ public class MockVerticle extends BaseVerticle {
         vertx.eventBus().<APIStub>consumer(API_PATH_STUB_DELETE_ADDRESS).handler(dynamicMockHandler::removePathStubRoute);
         vertx.eventBus().<APIService>consumer(API_SERVICE_UPDATE_ADDRESS).handler(dynamicMockHandler::refreshPathRoutesByServiceId);
         vertx.eventBus().<String>consumer(API_SERVICE_DELETE_ADDRESS).handler(dynamicMockHandler::removeRoutesByServiceId);
+
+        //runtime
+        vertx.eventBus().<APIStub>consumer(API_MOCK_WEBHOOK_ADDRESS).handler(dynamicMockHandler::fireWebhook);
     }
 
     private Future<Router> configRouter() {
@@ -74,7 +77,7 @@ public class MockVerticle extends BaseVerticle {
 
     private Future<Void> loadingExistedRoute() {
         Promise<Void> promise = Promise.promise();
-        apiServiceDao.findAllServiceWithDetails().onSuccess(compositeFuture -> {
+        return apiServiceDao.findAllServiceWithDetails().compose(compositeFuture -> {
             if (compositeFuture.succeeded()) {
                 compositeFuture.<APIService>list().forEach(apiService -> vertx.eventBus().publish(API_SERVICE_UPDATE_ADDRESS, apiService));
                 log.info("Loading existed route success");
@@ -83,8 +86,8 @@ public class MockVerticle extends BaseVerticle {
                 log.error("Loading existed route failed", compositeFuture.cause());
                 promise.fail(compositeFuture.cause());
             }
-        });
-        return promise.future();
+            return promise.future();
+        }).onFailure(promise::fail);
     }
 
 }

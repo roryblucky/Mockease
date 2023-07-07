@@ -9,4 +9,7 @@ public interface Constants {
      String API_SERVICE_UPDATE_ADDRESS =  "api.service.update";
      String API_SERVICE_DELETE_ADDRESS =  "api.service.delete";
 
+
+     String API_MOCK_WEBHOOK_ADDRESS = "api.mock.webhook";
+
 }

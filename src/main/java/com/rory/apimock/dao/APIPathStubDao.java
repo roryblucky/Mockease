@@ -39,11 +39,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
             .set(API_PATH_STUB.DESCRIPTION, dto.getDescription())
             .set(API_PATH_STUB.PATH, dto.getRequest().getPath())
             .set(API_PATH_STUB.METHOD, dto.getRequest().getMethod())
-            .set(API_PATH_STUB.REQUEST_HEADERS, new JsonObject(dto.getRequest().getHeaders()).encode())
-            .set(API_PATH_STUB.VALIDATION_ENABLED, dto.getRequest().isValidationEnabled())
-            .set(API_PATH_STUB.REQUEST_SCHEMA, dto.getRequest().getSchema())
-            .set(API_PATH_STUB.REQUEST_DYNAMIC_BODY, dto.getRequest().isDynamicBodyEnabled())
-            .set(API_PATH_STUB.REQUEST_BODY, dto.getRequest().getBody())
+            .set(API_PATH_STUB.REQUEST_CONTENT_TYPE, dto.getRequest().getContentType())
             .set(API_PATH_STUB.RESPONSE_HTTP_STATUS, dto.getResponse().getHttpStatus())
             .set(API_PATH_STUB.RESPONSE_HEADERS, new JsonObject(dto.getResponse().getHeaders()).encode())
             .set(API_PATH_STUB.RESPONSE_DYNAMIC_BODY, dto.getResponse().isDynamicBodyEnabled())
@@ -63,7 +59,8 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
         }
 
         if (dto.getResponse().isProxyEnabled()) {
-            insertSQL.set(API_PATH_STUB.RESPONSE_PROXY_URL, dto.getResponse().getProxy().getUrl());
+            insertSQL.set(API_PATH_STUB.RESPONSE_PROXY_HOST, dto.getResponse().getProxy().getHost());
+            insertSQL.set(API_PATH_STUB.RESPONSE_PROXY_PORT, dto.getResponse().getProxy().getPort());
         }
 
         final String sql = insertSQL.getSQL();
@@ -132,9 +129,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
             .set(API_PATH_STUB.UPDATE_AT, now)
             .set(API_PATH_STUB.PATH, dto.getRequest().getPath())
             .set(API_PATH_STUB.METHOD, dto.getRequest().getMethod())
-            .set(API_PATH_STUB.REQUEST_HEADERS, new JsonObject(dto.getRequest().getHeaders()).encode())
-            .set(API_PATH_STUB.VALIDATION_ENABLED, dto.getRequest().isValidationEnabled())
-            .set(API_PATH_STUB.REQUEST_DYNAMIC_BODY, dto.getRequest().isDynamicBodyEnabled())
+            .set(API_PATH_STUB.REQUEST_CONTENT_TYPE, dto.getRequest().getContentType())
             .set(API_PATH_STUB.RESPONSE_HTTP_STATUS, dto.getResponse().getHttpStatus())
             .set(API_PATH_STUB.RESPONSE_HEADERS, new JsonObject(dto.getResponse().getHeaders()).encode())
             .set(API_PATH_STUB.RESPONSE_DYNAMIC_BODY, dto.getResponse().isDynamicBodyEnabled())
@@ -145,13 +140,6 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
         if (StrUtil.isNotEmpty(dto.getDescription())) {
             updateStep.set(API_PATH_STUB.DESCRIPTION, dto.getDescription());
         }
-        //request optional fields
-        if (StrUtil.isNotEmpty(dto.getRequest().getSchema())) {
-            updateStep.set(API_PATH_STUB.REQUEST_SCHEMA, dto.getRequest().getSchema());
-        }
-        if (StrUtil.isNotEmpty(dto.getRequest().getBody())) {
-            updateStep.set(API_PATH_STUB.REQUEST_BODY, dto.getRequest().getBody());
-        }
         //response optional fields
         if (dto.getResponse().isWebhookEnabled()) {
             updateStep.set(API_PATH_STUB.RESPONSE_WEBHOOK_URL, dto.getResponse().getWebhook().getUrl())
@@ -161,7 +149,8 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
         }
 
         if (dto.getResponse().isProxyEnabled()) {
-            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_URL, dto.getResponse().getProxy().getUrl());
+            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_HOST, dto.getResponse().getProxy().getHost());
+            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_PORT, dto.getResponse().getProxy().getPort());
         }
 
         final String updateSQL = updateStep.where(API_PATH_STUB.API_PATH_STUB_ID.eq(pathId))
@@ -192,11 +181,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
                 //request
                 requestInfo.setPath(row.getString(API_PATH_STUB.PATH.getName().toLowerCase()));
                 requestInfo.setMethod(row.getString(API_PATH_STUB.METHOD.getName().toLowerCase()));
-                requestInfo.setHeaders(new JsonObject(row.getString(API_PATH_STUB.REQUEST_HEADERS.getName().toLowerCase())).getMap());
-                requestInfo.setValidationEnabled(row.getBoolean(API_PATH_STUB.VALIDATION_ENABLED.getName().toLowerCase()));
-                requestInfo.setSchema(row.getString(API_PATH_STUB.REQUEST_SCHEMA.getName().toLowerCase()));
-                requestInfo.setDynamicBodyEnabled(row.getBoolean(API_PATH_STUB.REQUEST_DYNAMIC_BODY.getName().toLowerCase()));
-                requestInfo.setBody(row.getString(API_PATH_STUB.REQUEST_BODY.getName().toLowerCase()));
+                requestInfo.setContentType(row.getString(API_PATH_STUB.REQUEST_CONTENT_TYPE.getName().toLowerCase()));
                 //response
                 responseInfo.setHttpStatus(row.getInteger(API_PATH_STUB.RESPONSE_HTTP_STATUS.getName().toLowerCase()));
                 responseInfo.setHeaders(new JsonObject(row.getString(API_PATH_STUB.RESPONSE_HEADERS.getName().toLowerCase())).getMap());
@@ -218,7 +203,8 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
                 if (responseInfo.isProxyEnabled()) {
                     ResponseInfo.Proxy proxy = new ResponseInfo.Proxy();
                     responseInfo.setProxy(proxy);
-                    proxy.setUrl(row.getString(API_PATH_STUB.RESPONSE_PROXY_URL.getName().toLowerCase()));
+                    proxy.setHost(row.getString(API_PATH_STUB.RESPONSE_PROXY_HOST.getName().toLowerCase()));
+                    proxy.setPort(row.getInteger(API_PATH_STUB.RESPONSE_PROXY_PORT.getName().toLowerCase()));
                 }
                 return apiPathDefinition;
             },

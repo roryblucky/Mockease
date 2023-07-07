@@ -12,11 +12,9 @@ public class DynamicMockHandler {
 
     private final MockRouterHelper mockRouterHelper;
 
-    private final Vertx vertx;
 
     public DynamicMockHandler(Vertx vertx, Router router) {
-        this.vertx = vertx;
-        this.mockRouterHelper = new MockRouterHelper(router);
+        this.mockRouterHelper = new MockRouterHelper(vertx, router);
     }
 
     public void createPathStubRoute(Message<APIStub> message) {
@@ -28,7 +26,6 @@ public class DynamicMockHandler {
     public void removePathStubRoute(Message<APIStub> message) {
         log.info("Removing route: {}", message.body().getIdentifier());
         mockRouterHelper.removeRoute(message.body());
-        message.reply("Route Removed");
     }
 
     public void updatePathStubRoute(Message<APIStub> message) {
@@ -53,4 +50,9 @@ public class DynamicMockHandler {
         mockRouterHelper.removeAllRoutesOnService(message.body());
     }
 
+
+    public void fireWebhook(Message<APIStub> message) {
+        log.info("Firing webhook for: {}", message.body().getIdentifier());
+        mockRouterHelper.fireWebhook(message.body());
+    }
 }

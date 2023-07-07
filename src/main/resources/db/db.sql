@@ -20,11 +20,7 @@ create table api_path_stub
     operation_id          varchar(64)   not null,
     path                  varchar(1000) not null,
     method                varchar(64)   not null,
-    request_headers       text          not null,
-    validation_enabled    boolean       not null,
-    request_schema        text,
-    request_dynamic_body  boolean       not null,
-    request_body          text,
+    request_content_type       text          not null,
     response_http_status  int4   not null,
     response_headers      text,
     response_dynamic_body boolean       not null,
@@ -36,7 +32,8 @@ create table api_path_stub
     response_webhook_dynamic_body  boolean     ,
     response_webhook_body          text,
     response_proxy_enabled         boolean       not null,
-    response_proxy_url             varchar(1000),
+    response_proxy_host             text,
+    response_proxy_port             int4,
     create_at             timestamptz   not null,
     update_at             timestamptz   not null
 );

@@ -40,12 +40,7 @@ public class APIPathStubHandler {
         String serviceId = ctx.pathParam("serviceId");
         Future<APIPathDefinition> validatedFuture = BeanValidationUtil.getInstance().validate(request.getData())
             .compose(validated -> {
-                if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
-                    throw new ValidationException("Proxy is enabled but proxy info is not provided");
-                }
-                if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {
-                    throw new ValidationException("Webhook is enabled but webhook info is not provided");
-                }
+                logicValidation(validated);
                 return Future.succeededFuture(validated);
             });
 
@@ -78,20 +73,24 @@ public class APIPathStubHandler {
         });
         BeanValidationUtil.getInstance().validate(request.getData())
             .compose(validated -> {
-                if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
-                    throw new ValidationException("Proxy is enabled but proxy info is not provided");
-                }
-                if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {
-                    throw new ValidationException("Webhook is enabled but webhook info is not provided");
-                }
-                return this.apiPathStubDao.checkUnique(serviceId, request.getData()).compose(newPathStub -> apiPathStubDao.update(serviceId, pathId, newPathStub));
+                logicValidation(validated);
+                return apiPathStubDao.update(serviceId, pathId, request.getData());
             })
             .compose(updated -> Future.all(this.apiServiceDao.findOne(serviceId), Future.succeededFuture(updated)))
             .onSuccess(updated -> {
                 ctx.json(ResponseWrapper.success(ctx, updated.resultAt(1)));
-                vertx.eventBus().publish(API_PATH_STUB_UPDATE_ADDRESS, new APIStub((APIService) updated.resultAt(0), updated.resultAt(1)));
+                vertx.eventBus().publish(API_PATH_STUB_UPDATE_ADDRESS, new APIStub( updated.<APIService>resultAt(0), updated.resultAt(1)));
             })
             .onFailure(ctx::fail);
+    }
+
+    private void logicValidation(APIPathDefinition validated) {
+               if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
+            throw new ValidationException("Proxy is enabled but proxy info is not provided");
+        }
+        if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {
+            throw new ValidationException("Webhook is enabled but webhook info is not provided");
+        }
     }
 
     public void deletePathStub(RoutingContext ctx) {
