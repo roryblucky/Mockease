@@ -18,11 +18,6 @@ public class MockRouterHelper {
         this.router = router;
     }
 
-    public boolean isDuplicatedRoute(APIStub apiStub) {
-        return router.getRoutes().stream()
-            .anyMatch(unique(apiStub.getIdentifier()));
-    }
-
     public void removeAllRoutesOnService(String serviceId) {
         router.getRoutes().stream()
             .filter(route -> route.<String>getMetadata(IDENTIFIER).contains(serviceId))

@@ -8,7 +8,6 @@ import com.rory.apimock.dto.web.APIPathDefinition;
 import com.rory.apimock.dto.web.APIService;
 import com.rory.apimock.dto.web.RequestWrapper;
 import com.rory.apimock.dto.web.ResponseWrapper;
-import com.rory.apimock.exceptions.DuplicateMockRouteException;
 import com.rory.apimock.exceptions.ValidationException;
 import com.rory.apimock.utils.BeanValidationUtil;
 import io.vertx.core.Future;
@@ -53,20 +52,13 @@ public class APIPathStubHandler {
         Future.all(this.apiServiceDao.findOne(serviceId), validatedFuture)
             .compose(all -> {
                 Future<APIService> apiService = Future.succeededFuture(all.resultAt(0));
-                Future<APIPathDefinition> apiPath = this.apiPathStubDao.save(serviceId, request.getData());
+                Future<APIPathDefinition> apiPath = this.apiPathStubDao.checkUnique(serviceId, request.getData())
+                    .compose(newPath -> this.apiPathStubDao.save(serviceId, newPath));
                 return Future.all(apiService, apiPath);
             })
             .onSuccess(result -> {
-                APIStub apiStub = new APIStub(result.<APIService>resultAt(0), result.resultAt(1));
-                vertx.eventBus().request(API_PATH_STUB_CREATE_ADDRESS, apiStub, msg -> {
-                        if(msg.failed()) {
-                            //TODO: Other exception handling?
-                            String message = msg.cause().getMessage();
-                            ctx.fail(new DuplicateMockRouteException(message));
-                        } else {
-                            ctx.json(ResponseWrapper.success(ctx, result.resultAt(1)));
-                        }
-                    });
+                ctx.json(ResponseWrapper.success(ctx, result.resultAt(1)));
+                vertx.eventBus().publish(API_PATH_STUB_CREATE_ADDRESS, new APIStub(result.<APIService>resultAt(0), result.resultAt(1)));
             })
             .onFailure(ctx::fail);
     }
@@ -92,21 +84,13 @@ public class APIPathStubHandler {
                 if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {
                     throw new ValidationException("Webhook is enabled but webhook info is not provided");
                 }
-                return apiPathStubDao.update(serviceId, pathId, request.getData());
+                return this.apiPathStubDao.checkUnique(serviceId, request.getData()).compose(newPathStub -> apiPathStubDao.update(serviceId, pathId, newPathStub));
             })
             .compose(updated -> Future.all(this.apiServiceDao.findOne(serviceId), Future.succeededFuture(updated)))
-            .onSuccess(updated ->
-                vertx.eventBus().request(API_PATH_STUB_UPDATE_ADDRESS,
-                    new APIStub((APIService) updated.resultAt(0), updated.resultAt(1)),
-                    msg -> {
-                        if(msg.failed()) {
-                            //TODO: Other exception handling?
-                            String message = msg.cause().getMessage();
-                            ctx.fail(new DuplicateMockRouteException(message));
-                        } else {
-                            ctx.json(ResponseWrapper.success(ctx, updated.resultAt(1)));
-                        }
-                }))
+            .onSuccess(updated -> {
+                ctx.json(ResponseWrapper.success(ctx, updated.resultAt(1)));
+                vertx.eventBus().publish(API_PATH_STUB_UPDATE_ADDRESS, new APIStub((APIService) updated.resultAt(0), updated.resultAt(1)));
+            })
             .onFailure(ctx::fail);
     }
 
@@ -114,8 +98,11 @@ public class APIPathStubHandler {
         final String serviceId = ctx.pathParam("serviceId");
         final String pathId = ctx.pathParam("pathId");
         this.apiPathStubDao.findOne(serviceId, pathId)
-            .compose(find -> vertx.eventBus().request(API_PATH_STUB_DELETE_ADDRESS, new APIStub(serviceId, find.getOperationId())))
-            .compose(ok ->  this.apiPathStubDao.deleteOne(serviceId, pathId))
+            .compose(find -> {
+                vertx.eventBus().publish(API_PATH_STUB_DELETE_ADDRESS, new APIStub(serviceId, find.getOperationId()));
+                return Future.succeededFuture(find);
+            })
+            .compose(ok -> this.apiPathStubDao.deleteOne(serviceId, pathId))
             .onSuccess(deleted -> ctx.json(ResponseWrapper.noContent(ctx)))
             .onFailure(ctx::fail);
     }

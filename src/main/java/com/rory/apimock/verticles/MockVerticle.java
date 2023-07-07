@@ -9,6 +9,7 @@ import com.rory.apimock.handlers.mock.DynamicMockHandler;
 import com.rory.apimock.utils.RouteBuilder;
 import com.rory.apimock.utils.RouterBuilder;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.pointer.JsonPointer;
@@ -37,11 +38,12 @@ public class MockVerticle extends BaseVerticle {
     public void start(Promise<Void> startPromise) throws Exception {
         this.initConsumers();
 
-        this.createAndStartHttpServer(this.configRouter(),
-                (int) JsonPointer.from("/http/mock/server/port").queryJsonOrDefault(config(), 8081))
+        this.configRouter().compose(router ->
+                this.createAndStartHttpServer(router,
+                    (int) JsonPointer.from("/http/mock/server/port").queryJsonOrDefault(config(),
+                        8081)))
             .onSuccess(server -> {
                 log.info("Mock Server started at {}", server.actualPort());
-
                 startPromise.complete();
             })
             .onFailure(startPromise::fail);
@@ -55,31 +57,34 @@ public class MockVerticle extends BaseVerticle {
         vertx.eventBus().<String>consumer(API_SERVICE_DELETE_ADDRESS).handler(dynamicMockHandler::removeRoutesByServiceId);
     }
 
-    private Router configRouter() {
+    private Future<Router> configRouter() {
+        final Promise<Router> promise = Promise.promise();
         final Router mockRouter = RouterBuilder.getInstance()
             .router(vertx).build();
-
         mockRouter.errorHandler(405, new MethodNotAllowedHandler());
         mockRouter.errorHandler(404, new NotFoundErrorHandler());
         RouteBuilder.getInstance(mockRouter.route("/mock/*")).commonHandler()
             .mountSubRouter(mockSubRouter).build();
-        this.loadingExistedRoute();
-        return mockRouter;
+        this.loadingExistedRoute().onSuccess(ok -> {
+            promise.complete(mockRouter);
+        }).onFailure(promise::fail);
+
+        return promise.future();
     }
 
-    private void loadingExistedRoute() {
+    private Future<Void> loadingExistedRoute() {
+        Promise<Void> promise = Promise.promise();
         apiServiceDao.findAllServiceWithDetails().onSuccess(compositeFuture -> {
-          if (compositeFuture.succeeded()) {
-              compositeFuture.<APIService>list().forEach(apiService ->
-                  vertx.eventBus().request(API_SERVICE_UPDATE_ADDRESS, apiService, reply -> {
-                      if (reply.failed()) {
-                          log.error("Failed to refresh routes for service {}", apiService.getId(), reply.cause());
-                      } else {
-                          log.info("Refresh routes for service {} - {} successfully", apiService.getId(), apiService.getName());
-                      }
-                  }));
-          }
+            if (compositeFuture.succeeded()) {
+                compositeFuture.<APIService>list().forEach(apiService -> vertx.eventBus().publish(API_SERVICE_UPDATE_ADDRESS, apiService));
+                log.info("Loading existed route success");
+                promise.complete();
+            } else {
+                log.error("Loading existed route failed", compositeFuture.cause());
+                promise.fail(compositeFuture.cause());
+            }
         });
+        return promise.future();
     }
 
 }

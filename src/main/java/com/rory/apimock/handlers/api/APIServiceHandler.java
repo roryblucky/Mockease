@@ -47,16 +47,11 @@ public class APIServiceHandler {
         BeanValidationUtil.getInstance().validate(request)
             .compose(req -> apiServiceDao.update(ctx.pathParam("serviceId"), req.getData()))
             .compose(updated -> apiServiceDao.findOne(ctx.pathParam("serviceId")))
-            .onSuccess(result ->
-                vertx.eventBus().request(API_SERVICE_UPDATE_ADDRESS, result, reply -> {
-                    if (reply.succeeded()) {
-                        result.setPathStubs(null);
-                        ctx.json(ResponseWrapper.success(ctx, result));
-                    } else {
-                        ctx.fail(reply.cause());
-                    }
-            })
-            ).onFailure(ctx::fail);
+            .onSuccess(result -> {
+                result.setPathStubs(null);
+                ctx.json(ResponseWrapper.success(ctx, result));
+                vertx.eventBus().publish(API_SERVICE_UPDATE_ADDRESS, result);
+            }).onFailure(ctx::fail);
     }
 
     public void getAPIServices(RoutingContext ctx) {
@@ -76,9 +71,10 @@ public class APIServiceHandler {
         String serviceId = ctx.pathParam("serviceId");
         apiPathStubDao.deleteByServiceId(serviceId)
             .compose(r -> apiServiceDao.delete(serviceId))
-            .onSuccess(results ->
-                vertx.eventBus().request(API_SERVICE_DELETE_ADDRESS, serviceId, msg -> ctx.json(ResponseWrapper.noContent(ctx)))
-            )
+            .onSuccess(results -> {
+                vertx.eventBus().publish(API_SERVICE_DELETE_ADDRESS, serviceId);
+                ctx.json(ResponseWrapper.noContent(ctx));
+            })
             .onFailure(ctx::fail);
     }
 }

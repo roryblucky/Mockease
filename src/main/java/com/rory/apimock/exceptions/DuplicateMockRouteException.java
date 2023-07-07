@@ -5,14 +5,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class DuplicateMockRouteException extends ErrorException {
 
-    private final String url;
+    private final String operationId;
 
-    public DuplicateMockRouteException(String url) {
-        this.url = url;
+    public DuplicateMockRouteException(String operationId) {
+        this.operationId = operationId;
     }
 
     @Override
     public ProblemDetails getBody(String path) {
-        return new ProblemDetails(HttpResponseStatus.BAD_REQUEST, path, String.format("Duplicated Route [%s] in current service", this.url));
+        return new ProblemDetails(HttpResponseStatus.BAD_REQUEST, path, String.format("Duplicated Route [%s] in current service", this.operationId));
     }
 }

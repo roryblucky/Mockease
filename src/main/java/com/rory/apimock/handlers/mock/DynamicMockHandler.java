@@ -21,13 +21,8 @@ public class DynamicMockHandler {
 
     public void createPathStubRoute(Message<APIStub> message) {
         APIStub apiStub = message.body();
-        if (mockRouterHelper.isDuplicatedRoute(apiStub)) {
-            message.fail(400, String.format("%s %s", apiStub.getMethod(), apiStub.getWholeUrl()));
-        } else {
-            log.info("Creating route: {}", apiStub.getIdentifier());
-            mockRouterHelper.createRoute(apiStub);
-            message.reply("Route Created");
-        }
+        log.info("Creating route: {}", apiStub.getIdentifier());
+        mockRouterHelper.createRoute(apiStub);
     }
 
     public void removePathStubRoute(Message<APIStub> message) {
@@ -40,12 +35,7 @@ public class DynamicMockHandler {
         APIStub apiStub = message.body();
         log.info("Updating route: {}", apiStub.getIdentifier());
         mockRouterHelper.removeRoute(apiStub);
-        if (mockRouterHelper.isDuplicatedRoute(apiStub)) {
-            message.fail(400, String.format("%s %s", apiStub.getMethod(), apiStub.getWholeUrl()));
-        } else {
-            mockRouterHelper.createRoute(apiStub);
-            message.reply("Route Updated");
-        }
+        mockRouterHelper.createRoute(apiStub);
     }
 
     public void refreshPathRoutesByServiceId(Message<APIService> message) {
@@ -56,13 +46,11 @@ public class DynamicMockHandler {
         apiService.getPathStubs().forEach(pathDefinition ->
             mockRouterHelper.createRoute(new APIStub(apiService, pathDefinition))
         );
-        message.reply("Route Refreshed");
     }
 
     public void removeRoutesByServiceId(Message<String> message) {
         log.info("Removing routes for service: {}", message.body());
         mockRouterHelper.removeAllRoutesOnService(message.body());
-        message.reply("Rute Removed");
     }
 
 }

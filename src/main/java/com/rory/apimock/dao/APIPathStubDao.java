@@ -6,6 +6,7 @@ import com.rory.apimock.db.tables.records.ApiPathStubRecord;
 import com.rory.apimock.dto.web.APIPathDefinition;
 import com.rory.apimock.dto.web.RequestInfo;
 import com.rory.apimock.dto.web.ResponseInfo;
+import com.rory.apimock.exceptions.DuplicateMockRouteException;
 import com.rory.apimock.exceptions.ResourceNotFoundException;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -106,6 +107,20 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
             .where(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
             .getSQL();
         return this.execute(sql, (promise, rowSet) -> promise.complete());
+    }
+
+    public Future<APIPathDefinition> checkUnique(String serviceId, APIPathDefinition apiPathDefinition) {
+        final String sql = dslContext.selectOne().from(API_PATH_STUB).where(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
+            .and(API_PATH_STUB.OPERATION_ID.eq(apiPathDefinition.getOperationId()
+
+            )).getSQL();
+        return this.execute(sql, (promise, rowSet) -> {
+            if (rowSet.size() == EXISTED) {
+                promise.fail(new DuplicateMockRouteException(apiPathDefinition.getOperationId()));
+            } else {
+                promise.complete(apiPathDefinition);
+            }
+        });
     }
 
     public Future<APIPathDefinition> update(String serviceId, String pathId, APIPathDefinition dto) {
