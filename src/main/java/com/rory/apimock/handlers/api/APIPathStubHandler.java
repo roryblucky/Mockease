@@ -74,7 +74,9 @@ public class APIPathStubHandler {
         BeanValidationUtil.getInstance().validate(request.getData())
             .compose(validated -> {
                 logicValidation(validated);
-                return apiPathStubDao.update(serviceId, pathId, request.getData());
+                Future<APIPathDefinition> update = apiPathStubDao.update(serviceId, pathId, request.getData());
+                update.onFailure(ctx::fail);
+                return update;
             })
             .compose(updated -> Future.all(this.apiServiceDao.findOne(serviceId), Future.succeededFuture(updated)))
             .onSuccess(updated -> {
@@ -85,7 +87,7 @@ public class APIPathStubHandler {
     }
 
     private void logicValidation(APIPathDefinition validated) {
-               if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
+       if (validated.getResponse().isProxyEnabled() && validated.getResponse().getProxy() == null) {
             throw new ValidationException("Proxy is enabled but proxy info is not provided");
         }
         if (validated.getResponse().isWebhookEnabled() && validated.getResponse().getWebhook() == null) {

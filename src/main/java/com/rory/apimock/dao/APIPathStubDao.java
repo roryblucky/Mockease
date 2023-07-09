@@ -108,9 +108,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
 
     public Future<APIPathDefinition> checkUnique(String serviceId, APIPathDefinition apiPathDefinition) {
         final String sql = dslContext.selectOne().from(API_PATH_STUB).where(API_PATH_STUB.API_SERVICE_ID.eq(serviceId))
-            .and(API_PATH_STUB.OPERATION_ID.eq(apiPathDefinition.getOperationId()
-
-            )).getSQL();
+            .and(API_PATH_STUB.OPERATION_ID.eq(apiPathDefinition.getOperationId())).getSQL();
         return this.execute(sql, (promise, rowSet) -> {
             if (rowSet.size() == EXISTED) {
                 promise.fail(new DuplicateMockRouteException(apiPathDefinition.getOperationId()));
@@ -198,7 +196,6 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
                     webhookInfo.setUrl(row.getString(API_PATH_STUB.RESPONSE_WEBHOOK_URL.getName().toLowerCase()));
                     webhookInfo.setMethod(row.getString(API_PATH_STUB.RESPONSE_WEBHOOK_METHOD.getName().toLowerCase()));
                     webhookInfo.setHeaders(new JsonObject(row.getString(API_PATH_STUB.RESPONSE_WEBHOOK_HEADERS.getName().toLowerCase())).getMap());
-                    webhookInfo.setDynamicBodyEnabled(row.getBoolean(API_PATH_STUB.RESPONSE_WEBHOOK_DYNAMIC_BODY.getName().toLowerCase()));
                     webhookInfo.setBody(row.getString(API_PATH_STUB.RESPONSE_WEBHOOK_BODY.getName().toLowerCase()));
                 }
                 //proxy

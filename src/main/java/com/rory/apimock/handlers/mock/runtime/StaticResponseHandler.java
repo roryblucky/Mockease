@@ -1,4 +1,4 @@
-package com.rory.apimock.handlers.mock;
+package com.rory.apimock.handlers.mock.runtime;
 
 import com.rory.apimock.dto.APIStub;
 import io.vertx.core.Handler;
@@ -31,7 +31,6 @@ public class StaticResponseHandler implements Handler<RoutingContext> {
         Object dynamicResponse = ctx.get(DYNAMIC_RESPONSE);
         if (dynamicResponse != null) {
             ctx.response().end((Buffer)dynamicResponse);
-
         } else {
             ctx.response().end(apiStub.getResponseBody());
         }

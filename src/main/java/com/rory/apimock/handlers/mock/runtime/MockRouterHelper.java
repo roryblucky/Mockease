@@ -1,4 +1,4 @@
-package com.rory.apimock.handlers.mock;
+package com.rory.apimock.handlers.mock.runtime;
 
 import com.rory.apimock.dto.APIStub;
 import io.vertx.core.Vertx;

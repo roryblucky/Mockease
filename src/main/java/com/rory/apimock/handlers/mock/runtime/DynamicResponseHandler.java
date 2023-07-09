@@ -1,4 +1,4 @@
-package com.rory.apimock.handlers.mock;
+package com.rory.apimock.handlers.mock.runtime;
 
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;

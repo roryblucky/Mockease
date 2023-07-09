@@ -5,7 +5,7 @@ import com.rory.apimock.dto.APIStub;
 import com.rory.apimock.dto.web.APIService;
 import com.rory.apimock.handlers.error.MethodNotAllowedHandler;
 import com.rory.apimock.handlers.error.NotFoundErrorHandler;
-import com.rory.apimock.handlers.mock.DynamicMockHandler;
+import com.rory.apimock.handlers.mock.MockPathHandler;
 import com.rory.apimock.utils.JsonPointerUtil;
 import com.rory.apimock.utils.RouteBuilder;
 import com.rory.apimock.utils.RouterBuilder;
@@ -21,7 +21,7 @@ import static com.rory.apimock.dto.Constants.*;
 @Slf4j
 public class MockVerticle extends BaseVerticle {
 
-    private DynamicMockHandler dynamicMockHandler;
+    private MockPathHandler mockPathHandler;
 
     private Router mockSubRouter;
     private APIServiceDao apiServiceDao;
@@ -31,7 +31,7 @@ public class MockVerticle extends BaseVerticle {
         super.init(vertx, context);
         this.mockSubRouter = Router.router(vertx);
         this.apiServiceDao = new APIServiceDao(sqlClient);
-        this.dynamicMockHandler = new DynamicMockHandler(vertx, mockSubRouter);
+        this.mockPathHandler = new MockPathHandler(vertx, mockSubRouter);
     }
 
     @Override
@@ -49,14 +49,14 @@ public class MockVerticle extends BaseVerticle {
     }
 
     private void initEventBusConsumers() {
-        vertx.eventBus().<APIStub>consumer(API_PATH_STUB_CREATE_ADDRESS).handler(dynamicMockHandler::createPathStubRoute);
-        vertx.eventBus().<APIStub>consumer(API_PATH_STUB_UPDATE_ADDRESS).handler(dynamicMockHandler::updatePathStubRoute);
-        vertx.eventBus().<APIStub>consumer(API_PATH_STUB_DELETE_ADDRESS).handler(dynamicMockHandler::removePathStubRoute);
-        vertx.eventBus().<APIService>consumer(API_SERVICE_UPDATE_ADDRESS).handler(dynamicMockHandler::refreshPathRoutesByServiceId);
-        vertx.eventBus().<String>consumer(API_SERVICE_DELETE_ADDRESS).handler(dynamicMockHandler::removeRoutesByServiceId);
+        vertx.eventBus().<APIStub>consumer(API_PATH_STUB_CREATE_ADDRESS).handler(mockPathHandler::createPathStubRoute);
+        vertx.eventBus().<APIStub>consumer(API_PATH_STUB_UPDATE_ADDRESS).handler(mockPathHandler::updatePathStubRoute);
+        vertx.eventBus().<APIStub>consumer(API_PATH_STUB_DELETE_ADDRESS).handler(mockPathHandler::removePathStubRoute);
+        vertx.eventBus().<APIService>consumer(API_SERVICE_UPDATE_ADDRESS).handler(mockPathHandler::refreshPathRoutesByServiceId);
+        vertx.eventBus().<String>consumer(API_SERVICE_DELETE_ADDRESS).handler(mockPathHandler::removeRoutesByServiceId);
 
         //runtime
-        vertx.eventBus().<APIStub>consumer(API_MOCK_WEBHOOK_ADDRESS).handler(dynamicMockHandler::fireWebhook);
+        vertx.eventBus().<APIStub>consumer(API_MOCK_WEBHOOK_ADDRESS).handler(mockPathHandler::fireWebhook);
     }
 
     private Future<Router> configRouter() {
