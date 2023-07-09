@@ -36,10 +36,7 @@ public class MockVerticle extends BaseVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-
-        System.setProperty("vertx.disableDnsResolver", "true");
-
-        this.initConsumers();
+        this.initEventBusConsumers();
 
         this.configRouter().compose(router ->
                 this.createAndStartHttpServer(router,
@@ -51,7 +48,7 @@ public class MockVerticle extends BaseVerticle {
             .onFailure(startPromise::fail);
     }
 
-    private void initConsumers() {
+    private void initEventBusConsumers() {
         vertx.eventBus().<APIStub>consumer(API_PATH_STUB_CREATE_ADDRESS).handler(dynamicMockHandler::createPathStubRoute);
         vertx.eventBus().<APIStub>consumer(API_PATH_STUB_UPDATE_ADDRESS).handler(dynamicMockHandler::updatePathStubRoute);
         vertx.eventBus().<APIStub>consumer(API_PATH_STUB_DELETE_ADDRESS).handler(dynamicMockHandler::removePathStubRoute);

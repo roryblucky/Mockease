@@ -3,13 +3,13 @@ package com.rory.apimock.dto;
 import com.rory.apimock.dto.web.APIPathDefinition;
 import com.rory.apimock.dto.web.APIService;
 import com.rory.apimock.dto.web.ResponseInfo;
-import lombok.Data;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
 public class APIStub implements Serializable {
 
 

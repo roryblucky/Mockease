@@ -88,7 +88,7 @@ public class APIServiceDao extends BaseDao<APIService> {
             listSqlResult.value().stream().findAny().ifPresentOrElse(any ->
                     pathStubDao.findByServiceId(any.getId())
                         .onSuccess(pathDefinitions -> {
-                            any.setPathStubs(pathDefinitions);
+                            any.getPathStubs().addAll(pathDefinitions);
                             promise.complete(any);
                         })
                         .onFailure(promise::fail),
@@ -98,7 +98,7 @@ public class APIServiceDao extends BaseDao<APIService> {
 
     public Future<CompositeFuture> findAllServiceWithDetails() {
         return this.findAll().compose(list -> {
-            List<Future<APIService>> collect = list.stream().map(apiService -> this.findOne(apiService.getId()))
+                List<Future<APIService>> collect = list.stream().map(apiService -> this.findOne(apiService.getId()))
                 .collect(Collectors.toList());
             return Future.all(collect);
         });

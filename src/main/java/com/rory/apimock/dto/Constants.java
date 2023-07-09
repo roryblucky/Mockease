@@ -3,6 +3,7 @@ package com.rory.apimock.dto;
 public interface Constants {
 
     String HTTPS_SCHEME = "https";
+    String DYNAMIC_RESPONSE = "dynamicResponse";
     String API_MOCK_ENDPOINT_PREFIX = "/mock";
     String API_MOCK_ENDPOINT_PREFIX_WILDCARD = "/mock/*";
     //Mock endpoints event bus address

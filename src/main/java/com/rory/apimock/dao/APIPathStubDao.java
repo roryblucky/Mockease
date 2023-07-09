@@ -162,16 +162,18 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
 
     @Override
     protected Collector<Row, ?, List<APIPathDefinition>> rowMappingCollector() {
-        APIPathDefinition apiPathDefinition = new APIPathDefinition();
-        //request
-        RequestInfo requestInfo = new RequestInfo();
-        apiPathDefinition.setRequest(requestInfo);
-        //Response
-        ResponseInfo responseInfo = new ResponseInfo();
-        apiPathDefinition.setResponse(responseInfo);
+
 
         return Collectors.mapping(
             row -> {
+                APIPathDefinition apiPathDefinition = new APIPathDefinition();
+                //request
+                RequestInfo requestInfo = new RequestInfo();
+                apiPathDefinition.setRequest(requestInfo);
+                //Response
+                ResponseInfo responseInfo = new ResponseInfo();
+                apiPathDefinition.setResponse(responseInfo);
+
                 apiPathDefinition.setId(row.getString(API_PATH_STUB.API_PATH_STUB_ID.getName().toLowerCase()));
                 apiPathDefinition.setName(row.getString(API_PATH_STUB.NAME.getName().toLowerCase()));
                 apiPathDefinition.setOperationId(row.getString(API_PATH_STUB.OPERATION_ID.getName().toLowerCase()));

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -34,6 +35,11 @@ public class APIService extends BaseDto {
 
     @Valid
     private List<APIPathDefinition> pathStubs;
+
+
+    public List<APIPathDefinition> getPathStubs() {
+        return pathStubs == null ? this.pathStubs = new LinkedList<>() : pathStubs;
+    }
 
     public APIService() {
     }

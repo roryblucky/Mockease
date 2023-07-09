@@ -52,7 +52,7 @@ public class APIPathStubHandler {
                 return Future.all(apiService, apiPath);
             })
             .onSuccess(result -> {
-                ctx.json(ResponseWrapper.success(ctx, result.resultAt(1)));
+                ctx.json(ResponseWrapper.create(ctx, result.resultAt(1)));
                 vertx.eventBus().publish(API_PATH_STUB_CREATE_ADDRESS, new APIStub(result.<APIService>resultAt(0), result.resultAt(1)));
             })
             .onFailure(ctx::fail);

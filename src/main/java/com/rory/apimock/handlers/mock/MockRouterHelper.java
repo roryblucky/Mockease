@@ -8,10 +8,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.URI;
 import java.util.function.Predicate;
-
-import static com.rory.apimock.dto.Constants.API_MOCK_WEBHOOK_ADDRESS;
 
 @Slf4j
 public class MockRouterHelper {
@@ -51,16 +48,8 @@ public class MockRouterHelper {
         if (apiStub.isProxyEnabled()) {
             newRoute.handler(new MockProxyHandler(vertx, apiStub));
         } else {
-            //setting handler;
-            newRoute.handler(ctx -> {
-                if (apiStub.isWebhookEnabled()) {
-                    ctx.addEndHandler(v -> vertx.eventBus().send(API_MOCK_WEBHOOK_ADDRESS, apiStub));
-                }
-                ctx.response().setStatusCode(apiStub.getResponseHttpStatus());
-                ctx.response().headers().addAll(apiStub.getResponseHeaders());
-                ctx.response().end(apiStub.getResponseBody());
-
-            });
+            newRoute.handler(new DynamicResponseHandler(vertx, apiStub));
+            newRoute.handler(new StaticResponseHandler(vertx, apiStub));
         }
 
         return newRoute;
@@ -83,11 +72,4 @@ public class MockRouterHelper {
             newRoute.produces(responseContentType);
         }
     }
-
-    public static void main(String[] args) {
-        URI uri = URI.create("https://httpbin.org/anything");
-        System.out.println(uri.getHost());
-
-    }
-
 }
