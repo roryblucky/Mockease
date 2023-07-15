@@ -33,7 +33,10 @@ public class MockProxyHandler implements ProxyInterceptor, Handler<RoutingContex
             .setSsl(HTTPS_SCHEME.equalsIgnoreCase(uri.getScheme()))
             .setConnectTimeout(JsonPointerUtil.queryJsonOrDefault("/proxy/connectionTimeout", vertx.getOrCreateContext().config(), 30000))
             .setKeepAliveTimeout(JsonPointerUtil.queryJsonOrDefault("/proxy/keepAliveTimeout", vertx.getOrCreateContext().config(), 60000))
-            .setTrustAll(true);
+            .setIdleTimeout(JsonPointerUtil.queryJsonOrDefault("/proxy/connectionTimeout", vertx.getOrCreateContext().config(), 30000))
+            .setTryUseCompression(true)
+            .setTrustAll(true)
+            .setVerifyHost(false);
 
         HttpProxy proxy = HttpProxy.reverseProxy(vertx.createHttpClient(options));
         proxy.addInterceptor(this);

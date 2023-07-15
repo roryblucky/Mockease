@@ -16,6 +16,11 @@ db:
   connectionTimeout: 30000
   idleTimeout: 30000
   maxSize: 20
+webhook:
+  connectionTimeout: 30000
+  keepAliveTimeout: 30000
+  idleTimeout: 15000
 proxy:
   connectionTimeout: 30000
   keepAliveTimeout: 30000
+  idleTimeout: 15000
