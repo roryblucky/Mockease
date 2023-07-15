@@ -8,6 +8,7 @@ import io.vertx.core.Promise;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -16,10 +17,12 @@ import java.util.stream.Collectors;
 public class BeanValidationUtil {
 
 
-    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private final Validator validator;
 
     private BeanValidationUtil() {
-
+        try(ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            this.validator = validatorFactory.getValidator();
+        }
     }
     public static BeanValidationUtil getInstance() {
         return Singleton.get(BeanValidationUtil.class);

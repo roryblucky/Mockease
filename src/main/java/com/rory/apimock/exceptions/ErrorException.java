@@ -11,6 +11,10 @@ public abstract class ErrorException extends RuntimeException {
     public ErrorException(Throwable ex) {
         super(ex.getMessage(), ex);
     }
+    public ErrorException(String message) {
+        super(message);
+    }
+
 
     public abstract ProblemDetails getBody(String path);
 }

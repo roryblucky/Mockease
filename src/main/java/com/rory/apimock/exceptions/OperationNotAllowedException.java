@@ -5,14 +5,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class OperationNotAllowedException extends ErrorException {
 
-    private final String message;
-
     public OperationNotAllowedException(String message) {
-        this.message = message;
+        super(String.format("Operation Not Allowed, %s.", message));
     }
 
     @Override
     public ProblemDetails getBody(String path) {
-        return new ProblemDetails(HttpResponseStatus.FORBIDDEN, path, String.format("Operation Not Allowed, %s.", this.message));
+        return new ProblemDetails(HttpResponseStatus.FORBIDDEN, path, getMessage());
     }
 }

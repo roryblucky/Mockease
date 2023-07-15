@@ -8,7 +8,6 @@ import com.rory.apimock.handlers.error.NotFoundErrorHandler;
 import com.rory.apimock.handlers.mock.MockPathHandler;
 import com.rory.apimock.utils.JsonPointerUtil;
 import com.rory.apimock.utils.RouteBuilder;
-import com.rory.apimock.utils.RouterBuilder;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -61,8 +60,7 @@ public class MockVerticle extends BaseVerticle {
 
     private Future<Router> configRouter() {
         final Promise<Router> promise = Promise.promise();
-        final Router mockRouter = RouterBuilder.getInstance()
-            .router(vertx).build();
+        final Router mockRouter = Router.router(vertx);
         mockRouter.errorHandler(405, new MethodNotAllowedHandler());
         mockRouter.errorHandler(404, new NotFoundErrorHandler());
         RouteBuilder.getInstance(mockRouter.route(API_MOCK_ENDPOINT_PREFIX_WILDCARD)).commonHandler()

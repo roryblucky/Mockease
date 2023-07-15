@@ -8,7 +8,6 @@ import com.rory.apimock.handlers.error.MethodNotAllowedHandler;
 import com.rory.apimock.handlers.error.NotFoundErrorHandler;
 import com.rory.apimock.utils.JsonPointerUtil;
 import com.rory.apimock.utils.RouteBuilder;
-import com.rory.apimock.utils.RouterBuilder;
 import io.vertx.core.Context;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -36,7 +35,7 @@ public class WebAPIVerticle extends BaseVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-        Router router = RouterBuilder.getInstance().router(vertx).build();
+        Router router = Router.router(vertx);
         router.errorHandler(405, new MethodNotAllowedHandler());
         router.errorHandler(404, new NotFoundErrorHandler());
         router.route("/static/*").handler(StaticHandler.create("webroot"));

@@ -7,20 +7,19 @@ import java.util.List;
 
 public class ValidationException extends ErrorException {
 
-    private final String detail;
     private List<ProblemDetails.ErrorDetail> errorDetails;
 
 
-    public ValidationException(String detail) {
-        this.detail = detail;
+    public ValidationException(String message) {
+        super(message);
     }
 
-    public ValidationException(String detail, List<ProblemDetails.ErrorDetail> errorDetails) {
+    public ValidationException(String message, List<ProblemDetails.ErrorDetail> errorDetails) {
+        this(message);
         this.errorDetails = errorDetails;
-        this.detail = detail;
     }
 
     public ProblemDetails getBody(String path) {
-        return new ProblemDetails(HttpResponseStatus.BAD_REQUEST, path, detail, errorDetails);
+        return new ProblemDetails(HttpResponseStatus.BAD_REQUEST, path, getMessage(), errorDetails);
     }
 }

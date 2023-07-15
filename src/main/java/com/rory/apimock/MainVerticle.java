@@ -56,9 +56,7 @@ public class MainVerticle extends AbstractVerticle {
             .map(verticle -> vertx.deployVerticle(verticle.getName(), deploymentOptions))
             .collect(Collectors.toList());
 
-        Future.all(futures).onSuccess(event -> {
-            promise.complete();
-        }).onFailure(promise::fail);
+        Future.all(futures).onSuccess(event -> promise.complete()).onFailure(promise::fail);
 
         return promise.future();
     }
