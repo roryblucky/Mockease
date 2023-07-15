@@ -32,8 +32,10 @@ create table api_path_stub
     response_webhook_dynamic_body  boolean     ,
     response_webhook_body          text,
     response_proxy_enabled         boolean       not null,
+    response_proxy_strip_version_and_base_path boolean       not null,
     response_proxy_host             text,
     response_proxy_port             int4,
+
     create_at             timestamptz   not null,
     update_at             timestamptz   not null
 );

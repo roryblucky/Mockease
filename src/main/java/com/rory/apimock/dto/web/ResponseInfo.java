@@ -67,5 +67,7 @@ public class ResponseInfo implements Serializable {
 
         @NotNull
         private Integer port;
+
+        private boolean stripVersionAndBasePath;
     }
 }

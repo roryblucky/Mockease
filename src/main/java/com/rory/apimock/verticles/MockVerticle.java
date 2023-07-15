@@ -3,8 +3,10 @@ package com.rory.apimock.verticles;
 import com.rory.apimock.dao.APIServiceDao;
 import com.rory.apimock.dto.APIStub;
 import com.rory.apimock.dto.web.APIService;
+import com.rory.apimock.handlers.error.BadRequestErrorHandler;
 import com.rory.apimock.handlers.error.MethodNotAllowedHandler;
 import com.rory.apimock.handlers.error.NotFoundErrorHandler;
+import com.rory.apimock.handlers.error.UnsupportedMediaTypeErrorHandler;
 import com.rory.apimock.handlers.mock.MockPathHandler;
 import com.rory.apimock.utils.JsonPointerUtil;
 import com.rory.apimock.utils.RouteBuilder;
@@ -61,8 +63,12 @@ public class MockVerticle extends BaseVerticle {
     private Future<Router> configRouter() {
         final Promise<Router> promise = Promise.promise();
         final Router mockRouter = Router.router(vertx);
+
+        mockRouter.errorHandler(400, new BadRequestErrorHandler());
         mockRouter.errorHandler(405, new MethodNotAllowedHandler());
         mockRouter.errorHandler(404, new NotFoundErrorHandler());
+        mockRouter.errorHandler(415, new UnsupportedMediaTypeErrorHandler());
+
         RouteBuilder.getInstance(mockRouter.route(API_MOCK_ENDPOINT_PREFIX_WILDCARD)).commonHandler()
             .mountSubRouter(mockSubRouter).build();
         this.loadingExistedRoute()

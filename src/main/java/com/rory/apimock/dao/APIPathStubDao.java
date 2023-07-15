@@ -59,8 +59,10 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
         }
 
         if (dto.getResponse().isProxyEnabled()) {
-            insertSQL.set(API_PATH_STUB.RESPONSE_PROXY_HOST, dto.getResponse().getProxy().getHost());
-            insertSQL.set(API_PATH_STUB.RESPONSE_PROXY_PORT, dto.getResponse().getProxy().getPort());
+
+            insertSQL.set(API_PATH_STUB.RESPONSE_PROXY_HOST, dto.getResponse().getProxy().getHost())
+                .set(API_PATH_STUB.RESPONSE_PROXY_PORT, dto.getResponse().getProxy().getPort())
+                .set(API_PATH_STUB.RESPONSE_PROXY_STRIP_VERSION_AND_BASE_PATH, dto.getResponse().getProxy().isStripVersionAndBasePath());
         }
 
         final String sql = insertSQL.getSQL();
@@ -147,8 +149,9 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
         }
 
         if (dto.getResponse().isProxyEnabled()) {
-            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_HOST, dto.getResponse().getProxy().getHost());
-            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_PORT, dto.getResponse().getProxy().getPort());
+            updateStep.set(API_PATH_STUB.RESPONSE_PROXY_HOST, dto.getResponse().getProxy().getHost())
+                .set(API_PATH_STUB.RESPONSE_PROXY_PORT, dto.getResponse().getProxy().getPort())
+                .set(API_PATH_STUB.RESPONSE_PROXY_STRIP_VERSION_AND_BASE_PATH, dto.getResponse().getProxy().isStripVersionAndBasePath());
         }
 
         final String updateSQL = updateStep.where(API_PATH_STUB.API_PATH_STUB_ID.eq(pathId))
@@ -204,6 +207,7 @@ public class APIPathStubDao extends BaseDao<APIPathDefinition> {
                     responseInfo.setProxy(proxy);
                     proxy.setHost(row.getString(API_PATH_STUB.RESPONSE_PROXY_HOST.getName().toLowerCase()));
                     proxy.setPort(row.getInteger(API_PATH_STUB.RESPONSE_PROXY_PORT.getName().toLowerCase()));
+                    proxy.setStripVersionAndBasePath(row.getBoolean(API_PATH_STUB.RESPONSE_PROXY_STRIP_VERSION_AND_BASE_PATH.getName().toLowerCase()));
                 }
                 return apiPathDefinition;
             },

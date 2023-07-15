@@ -51,6 +51,8 @@ public class APIStub implements Serializable {
 
     private Integer proxyPort;
 
+    private boolean stripVersionAndBasePath;
+
 
     public APIStub(String apiServiceId, String operationId) {
         this.apiServiceId = apiServiceId;
@@ -85,6 +87,7 @@ public class APIStub implements Serializable {
         if (response.getProxy() != null) {
             this.proxyHost = response.getProxy().getHost();
             this.proxyPort = response.getProxy().getPort();
+            this.stripVersionAndBasePath = response.getProxy().isStripVersionAndBasePath();
         }
     }
 

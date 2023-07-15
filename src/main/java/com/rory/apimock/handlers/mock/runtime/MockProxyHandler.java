@@ -52,7 +52,11 @@ public class MockProxyHandler implements ProxyInterceptor, Handler<RoutingContex
     public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
         ProxyRequest request = context.request();
         String newUrl = request.getURI()
-            .replaceAll(API_MOCK_ENDPOINT_PREFIX + "/" + apiStub.getVersion() + apiStub.getBasePath(), "");
+            .replaceAll(API_MOCK_ENDPOINT_PREFIX, "");
+        if (apiStub.isStripVersionAndBasePath()) {
+            newUrl = newUrl
+                .replaceAll("/" + apiStub.getVersion() + apiStub.getBasePath(), "");
+        }
         request.setURI(newUrl);
         return ProxyInterceptor.super.handleProxyRequest(context);
     }
