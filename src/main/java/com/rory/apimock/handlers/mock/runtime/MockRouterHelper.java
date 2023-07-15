@@ -1,6 +1,8 @@
 package com.rory.apimock.handlers.mock.runtime;
 
+import com.github.jknack.handlebars.Template;
 import com.rory.apimock.dto.APIStub;
+import com.rory.apimock.utils.TemplateCacheUtil;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
@@ -10,11 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Predicate;
 
+import static com.rory.apimock.dto.Constants.IDENTIFIER;
+
 @Slf4j
 public class MockRouterHelper {
 
-    private static final String IDENTIFIER = "identifier";
-
+    private final TemplateCacheUtil<Template> templateCacheUtil;
     private final Router router;
     private final Vertx vertx;
 
@@ -22,18 +25,25 @@ public class MockRouterHelper {
     public MockRouterHelper(Vertx vertx, Router router) {
         this.vertx = vertx;
         this.router = router;
+        templateCacheUtil = new TemplateCacheUtil<>(vertx);
     }
 
     public void removeAllRoutesOnService(String serviceId) {
         router.getRoutes().stream()
             .filter(route -> route.<String>getMetadata(IDENTIFIER).contains(serviceId))
-            .forEach(Route::remove);
+            .forEach(route -> {
+                final String identifier = route.getMetadata(IDENTIFIER);
+                log.info("Removing route: {}", identifier);
+                route.remove();
+                templateCacheUtil.removeKeyIfPresent(identifier);
+            });
     }
 
     public void removeRoute(APIStub apiStub) {
         router.getRoutes().stream()
             .filter(unique(apiStub.getIdentifier()))
             .forEach(Route::remove);
+        templateCacheUtil.removeKeyIfPresent(apiStub.getIdentifier());
     }
 
     private Predicate<Route> unique(String identifier) {
@@ -42,7 +52,7 @@ public class MockRouterHelper {
 
     public Route createRoute(APIStub apiStub) {
         Route newRoute = router.route(HttpMethod.valueOf(apiStub.getMethod()), apiStub.getWholeUrl())
-            .putMetadata("identifier", apiStub.getIdentifier());
+            .putMetadata(IDENTIFIER, apiStub.getIdentifier());
         this.configContentType(apiStub, newRoute);
 
         if (apiStub.isProxyEnabled()) {

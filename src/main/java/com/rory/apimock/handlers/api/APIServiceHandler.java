@@ -48,7 +48,6 @@ public class APIServiceHandler {
             .compose(req -> apiServiceDao.update(ctx.pathParam("serviceId"), req.getData()))
             .compose(updated -> apiServiceDao.findOne(ctx.pathParam("serviceId")))
             .onSuccess(result -> {
-                result.getPathStubs().clear();
                 ctx.json(ResponseWrapper.success(ctx, result));
                 vertx.eventBus().publish(API_SERVICE_UPDATE_ADDRESS, result);
             }).onFailure(ctx::fail);

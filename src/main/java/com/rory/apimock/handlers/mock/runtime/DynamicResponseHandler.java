@@ -90,13 +90,13 @@ public class DynamicResponseHandler extends HandlebarsTemplateEngineImpl impleme
     @Override
     public void render(Map<String, Object> context, String contentStr, Handler<AsyncResult<Buffer>> handler) {
         try {
-            String operationId = apiStub.getOperationId();
-            TemplateHolder<Template> template = getTemplate(operationId);
+            String identifier = apiStub.getIdentifier();
+            TemplateHolder<Template> template = getTemplate(identifier);
             if (template == null) {
                 synchronized (this) {
-                    template = new TemplateHolder<>(handlebars.compile(new StringTemplateSource(operationId, contentStr)));
+                    template = new TemplateHolder<>(handlebars.compile(new StringTemplateSource(identifier, contentStr)));
                 }
-                putTemplate(operationId, template);
+                putTemplate(identifier, template);
             }
             Context engineContext = Context.newBuilder(context).resolver(getResolvers()).build();
             handler.handle(Future.succeededFuture(Buffer.buffer(template.template().apply(engineContext))));
