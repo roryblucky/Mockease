@@ -7,7 +7,7 @@ http:
       port: 8081
 
 db:
-  host: 127.0.0.1
+  host: db
   port: 5432
   database: api_mock
   username: api_mock_user
